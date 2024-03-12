@@ -1,0 +1,10 @@
+{
+  "tokens" : "data\\sys\\.env",
+  "YoungMouse" : {
+    "command_prefix": ".",
+    "cogs": ["cogs.Greetings", "cogs.Test"],
+    "replics": {
+      "start" : "Successful starting\nI logged as {user}\nStarting during: {during_time}"
+    }
+  }
+}
