@@ -3,7 +3,6 @@ from json import dump, load
 cfg = "data/json/json_conf.json"
 
 
-
 class JsonManager():
     def __init__(self):
         self.name = ""
@@ -12,13 +11,12 @@ class JsonManager():
         self.buffer = {}
         self.load_cfg(cfg)
         self.pjson = self.buffer["pjson"]
-        self.pro_keys = {"bots_properties.json": self.procedure_for_bots}
 
     def __str__(self):
-        return self.name
+        return str(self.buffer)
 
-    def load_cfg(self, path):
-        with open(path, "r") as f:
+    def load_cfg(self, path: str) -> None:
+        with open(path, "r", encoding="utf-8") as f:
             self.name = path.split("/")[-1]
             try:
                 self.buffer = load(f)
@@ -29,9 +27,18 @@ class JsonManager():
             else:
                 self.loadCode = 1
 
-    def procedure_for_bots(self, bot_name: str):
+    def write_cfg(self, path: str, dictionary: dict) -> None:
+        with open(path, "w", encoding="utf-8") as f:
+            try:
+                dump(dictionary, f)
+            except Exception as e:
+                print(e)
+
+    def procedure_for_bots(self, bot_name: str) -> None:
         self.replics = self.buffer[bot_name]["replics"]
 
-    def dload_cfg(self, short_name):
-        self.load_cfg(self.pjson + short_name)
+    def dload_cfg(self, short_name: str) -> None:
+        self.load_cfg(path=self.pjson+short_name)
 
+    def dwrite_cfg(self, short_name: str, dictionary: dict) -> None:
+        self.write_cfg(path=self.pjson+short_name, dictionary=dictionary)

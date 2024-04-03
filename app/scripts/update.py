@@ -1,15 +1,43 @@
 from importlib import import_module
-from os import system
+from os import system, chdir
+from sys import prefix
 
 
 path_to_reg = "data\\sys\\req.txt"
 path_to_reg_temp = "data\\sys\\req_temp.txt"
 req = ""
-
+env_name = "env"
 
 print("""[$] UPDATE MANAGER VER 0.1.0
+[$] Checking env python...
+[$] Status: starting...""")
+
+if "env" != prefix.split("\\")[-1]:
+
+    print(f"""[!] Program couldn't found environment:\n
+[$] Create env ?""")
+
+    response = input("[?] answer [y/n] > ")
+
+    if response != "y":
+        print("[$] Stopping update manager...")
+        exit(1)
+
+    print("""[$] Creating env
+[$] Status: starting...""")
+    chdir("..")
+    system(f"python -m venv {env_name}")
+
+    print("""[$] Status: complete!
+[!] Restarting...
+[$] Stopping update manager...""")
+    exit(36)
+
+
+print("""[$] Status: complete!
 [$] Scanning requirements
 [$] Status: starting...""")
+
 
 with open(path_to_reg, "r") as file:
     for lib_name_ver in file.read().split("\n"):
