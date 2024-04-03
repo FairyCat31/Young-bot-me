@@ -22,6 +22,6 @@
 #         print("att not found")
 #
 #
-# token = "MTIxNjA5MDc3Nzc5MzMzNTM3OA.GR7VCl.j6Ro5LtMCaqu70Ox3SSzlyUNFrMcVugIm26OUY"
+
 # bot.run(token)
 #
