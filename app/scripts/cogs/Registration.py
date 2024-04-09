@@ -1,56 +1,29 @@
-import disnake
+from disnake import Embed, ModalInteraction, MessageInteraction, CommandInter, ButtonStyle
 from disnake.ext import commands
-from disnake.ui import Modal, TextInput
+from disnake.ui import Modal, TextInput, Button
 # from components.jsonmanager import JsonManager
 from components.dbmanager import DatabaseManager
 from disnake import TextInputStyle as tis
 from asyncio import sleep
-
-
-class SmartModal(Modal):
-    def __init__(self, cfg: dict):
-        self.cfg = cfg
-        components = [
-            TextInput(
-                label=ti["label"],
-                placeholder=ti["placeholder"],
-                max_length=ti["max_length"],
-                min_length=ti["min_length"],
-                required=ti["required"],
-                custom_id=ti["custom_id"],
-                style=tis.long if ti["style"] == "long" else tis.short
-        ) for ti in cfg["text_inputs"]
-        ]
-        super().__init__(title=cfg["title"], custom_id=cfg["custom_id"], components=components)
-        # "label": "\uD83E\uDDD1\u200D\uD83D\uDCBB Игровой никнейм (логин на [сайте](https://mousearth.ru/))",
-        # "placeholder": "_pyth",
-        # "max_length": 25,
-        # "min_length": 5,
-        # "required": true,j
-        # "style": "short"
-
-        # "title" : "\uD83D\uDCC7 Верификация | Личная информация \uD83D\uDCBB",
-        # "custom_id": "ipers",
-
-    async def callback(self, inter):
-        pass
+from ..components.smartdisnake import *
 
 
 class RegModal(SmartModal):
     def __init__(self, cfg: dict):
-        super().__init__(cfg=cfg["pers_info"])
-        self.cfg = cfg
+        super().__init__(cfg=cfg["modals"]["pers_info"])
+        self.bls = cfg["button_labels"]
+        self.rcs = cfg["replics"]
         self.user_response = None
 
-    async def callback(self, inter: disnake.ModalInteraction):
+    async def callback(self, inter: ModalInteraction):
 
         self.user_response = inter.text_values
 
         await inter.response.send_message(
-            f"{inter.user.mention} пройдите вторую часть регистрации",
+            self.rcs["reg_modal_response_2"].format(user_mention=inter.user.mention),
             ephemeral=True,
             components=[
-                disnake.ui.Button(label="Продолжить", style=disnake.ButtonStyle.primary, custom_id="game_modal_button")
+                Button(label=self.bls["next"], style=ButtonStyle.primary, custom_id="game_modal_button")
             ],
         )
 
@@ -59,19 +32,12 @@ class GameModal(SmartModal):
     def __init__(self, cfg: dict):
         self.cfg = cfg
         # print(self.cfg)
-        super().__init__(cfg=self.cfg["gameplay"])
+        super().__init__(cfg=self.cfg["modals"]["gameplay"])
         self.user_response = None
-        self.last_mess_response = 0
 
-    async def callback(self, inter: disnake.ModalInteraction):
-
-        embed = disnake.Embed(title=f"Заявка {inter.user.name}")
-
-        embed.add_field(
-            name="Стадия заявки",
-            value="Заявка проходит модерацию",
-            inline=False,
-            )
+    async def callback(self, inter: ModalInteraction):
+        embed = SmartEmbed(cfg=self.cfg["embeds"]["game_modal_callback"])
+        embed.title = embed.title.format(user_name=inter.user.name)
 
         await inter.response.send_message(content=inter.user.mention, embed=embed, ephemeral=True)
         self.user_response = inter.text_values
@@ -82,7 +48,7 @@ class Registration(commands.Cog):
         self.bot = bot
         self.user_responses = {}
         self.delete_sub_message = {}
-        self.cfg = self.bot.cfg.buffer[bot.name]["modals"]
+        self.cfg = self.bot.cfg.buffer[bot.name]
         self.dbm = DatabaseManager("registration.db")
         self.dbm.save_db_init()
         self.dbm.connect()
@@ -92,28 +58,28 @@ class Registration(commands.Cog):
         try:
             int(info["iold"])
         except ValueError:
-            return False, "Неверный формат возраста"
+            return False, self.cfg["replics"]["auto_moder_wr_old_ft"]
 
-        if info["igender"] not in ["м", "ж", "д", "М", "Ж", "Д"]:
-            return False, "Неверный формат пола"
+        if info["igender"] not in self.cfg["genders"]:
+            return False, self.cfg["replics"]["auto_moder_wr_gender_ft"]
 
         if inter.user.get_role(1224805920140300389):
-            return False, "Вы уже авторизованы"
+            return False, self.cfg["replics"]["auto_moder_all_ver"]
 
         return True, ""
 
     @commands.slash_command()
-    async def reg(self, inter: disnake.CommandInter):
+    async def reg(self, inter: CommandInter):
 
         await inter.response.send_message(
-            "Чтобы пройти верификацию, нажмите кнопку ниже",
+            content=self.cfg["replics"]["reg_command_response"],
             components=[
-                disnake.ui.Button(label="Пройти", style=disnake.ButtonStyle.success, custom_id="user_modal_button"),
+                Button(label=self.cfg["button_labels"]["reg_start"], style=ButtonStyle.success, custom_id="user_modal_button"),
             ],
         )
 
     @commands.Cog.listener(name="on_button_click")
-    async def when_button_click(self, inter: disnake.MessageInteraction):
+    async def when_button_click(self, inter: MessageInteraction):
         if inter.component.custom_id not in ["game_modal_button", "user_modal_button"]:
             # We filter out any other button presses except
             # the components we wish to process.
@@ -140,7 +106,6 @@ class Registration(commands.Cog):
                 await sleep(0.5)
                 if g_reg.user_response:
                     self.user_responses[str(inter.user.id)]["game_data"] = g_reg.user_response
-                    mess_id_to_edit = g_reg.last_mess_response
                     break
             # print(self.user_responses[str(inter.user.id)])
 
@@ -156,11 +121,11 @@ class Registration(commands.Cog):
             is_accept, reason = await self.auto_moderate(inter=inter)
 
             if not is_accept:
-                embed = disnake.Embed(title=f"Заявка {inter.user.name}", description="Ваша заявка отклонена")
+                embed = SmartEmbed(cfg=self.cfg["embeds"]["request_reject"])
                 embed.add_field(
-                    name="Причина",
-                    value=reason,
-                    inline=False,
+                    name=self.cfg["embeds"]["request_reject"]["other"]["field"]["name"],
+                    value=self.cfg["embeds"]["request_reject"]["other"]["field"]["value"].format(reason=reason),
+                    inline=self.cfg["embeds"]["request_reject"]["other"]["field"]["inline"],
                     )
 
                 await self.bot.get_channel(1224426633767817236).send(content=inter.user.mention, embed=embed)

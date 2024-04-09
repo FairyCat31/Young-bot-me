@@ -41,6 +41,12 @@ class DatabaseManager:
             (discord_id, ud["ilogin"], ud["iname"], ud["igender"], ud["iold"], ud["idesc"], ud["iway"], ud["iinter"], ud["imove"], ud["iskill"], ud["isoc"])
              )
 
+    def user_add_2(self, table: str, ud: dict, discord_id: int):
+        self.cursor.execute(
+            f"INSERT INTO {table} (did, login, name, gender, old, desc, way, inter, move, skill, soc) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            (discord_id, ud["login"], ud["name"], ud["gender"], ud["old"], ud["desc"], ud["way"], ud["inter"], ud["move"], ud["skill"], ud["soc"])
+             )
+
     def user_delete(self, table: str, discord_id: int):
         self.cursor.execute(f'DELETE FROM {table} WHERE did = ?', (discord_id,))
 

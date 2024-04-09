@@ -2,9 +2,81 @@
   "tokens" : "data\\sys\\.env",
   "YoungMouse" : {
     "command_prefix": ".",
-    "cogs": ["cogs.Greetings", "cogs.Test", "cogs.Registration", "cogs.Accepting"],
+    "cogs": ["cogs.Main", "cogs.Greetings", "cogs.Registration", "cogs.Accepting"],
     "replics": {
-      "start" : "multiline\n> Successful starting\n> I logged as {user}\n> Starting during: {during_time}"
+      "start" : "multiline\n> Successful starting\n> I logged as {user}\n> Starting during: {during_time}",
+      "reg_modal_response_2": "{user_mention} пройдите вторую часть регистрации",
+      "reg_command_response": "Чтобы пройти верификацию, нажмите кнопку ниже",
+      "auto_moder_wr_old_ft": "Неверный формат возраста",
+      "auto_moder_wr_gender_ft": "Неверный формат пола",
+      "auto_moder_all_ver": "Вы уже авторизованы",
+      "auto_moder_def_reject": "по личному решению администрации",
+      "dm_start_message": "{user_mention} доброго времени суток\\nПо вашей заявке есть вопросы у {moder_mention}\\nТакже учтите, что другие проверяющие({role_moder}) могут задать вам вопросы",
+      "close_panel": "Панель закрыта",
+      "open_panel": "Открытие панели...",
+      "open_panel_wait": "Подождите...",
+      "dm_ch_name": "dm {member_name}"
+
+    },
+    "genders": ["м", "ж", "д", "М", "Ж", "Д"],
+    "button_labels": {
+      "next" : "Продолжить",
+      "reg_start": "Пройти"
+    },
+    "embeds": {
+      "empty_embed": {
+        "title": "НЕТ НОВЫХ ЗАЯВОК",
+        "description": "ВЫ МОЖЕТЕ ЗАКРЫТЬ ЭТО ОКНО",
+        "fields": []
+      },
+      "game_modal_callback": {
+        "title": "Заявка {user_name}",
+        "fields": [
+          {
+            "name": "Стадия заявки",
+            "value": "Заявка проходит модерацию",
+            "inline": false
+          }
+        ]
+      },
+      "request_reject": {
+        "title": "Заявка {user_name}",
+        "description": "Ваша заявка отклонена",
+        "fields": [
+          {
+            "name": "Стадия заявки",
+            "value": "Заявка проходит модерацию",
+            "inline": false
+          }
+        ],
+        "other": {
+          "field" : {
+            "name": "Причина",
+            "value": "{reason}",
+            "inline": false
+          },
+          "footer_text": "Moderator logged as {moder_name}"
+        }
+      },
+      "request_accept": {
+        "title": "Заявка {user_name}",
+        "description": "",
+        "fields": [
+          {
+            "name": "статус заявки",
+            "value": "принята",
+            "inline": false
+          },
+          {
+            "name": "информация",
+            "value": "вы можете начинать играть\nлаунчер можете скачать в канале #лаунчер",
+            "inline": false
+          }
+        ],
+        "other": {
+          "footer_text": "Moderator logged as {moder_name}"
+        }
+      }
     },
     "modals": {
       "pers_info": {
@@ -104,6 +176,21 @@
             "min_length": 3,
             "required": true,
             "custom_id": "isoc",
+            "style": "short"
+          }
+        ]
+      },
+      "reason_reject": {
+        "title": "Причина отказа",
+        "custom_id": "reject",
+        "text_inputs": [
+          {
+            "label": "Укажите причину отказа",
+            "placeholder": "-",
+            "max_length" : 100,
+            "min_length": 0,
+            "required": true,
+            "custom_id": "reason",
             "style": "short"
           }
         ]

@@ -53,7 +53,3 @@ class BotManager():
         self.log.printf(f"[&] Successful initialization of bot \"{name_bot}\"")
         self.log.printf(f"[&] Starting bot \"{name_bot}\"")
         self.BotsCont[name_bot].run(token)
-
-
-
-
