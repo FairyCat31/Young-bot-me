@@ -4,7 +4,7 @@ from asyncio import sleep
 import disnake
 from components.dbmanager import DatabaseManager
 from components.jsonmanager import JsonManager
-from ..components.smartdisnake import *
+from components.smartdisnake import *
 
 
 class TestView(View):
@@ -38,8 +38,9 @@ class Accepting(commands.Cog):
         self.bot = bot
         self.panel = None
         self.user_dimension = {}
-        self.cfg = JsonManager().buffer[self.bot.name]
-        self.cfg.dload_cfg(short_name="bots_properties.json")
+        self.cfg = bot.cfg
+        # self.cfg = JsonManager().buffer[self.bot.name]
+        # self.cfg.dload_cfg(short_name="bots_properties.json")
         self.fields = {}
         self.dbm = DatabaseManager(file_name="registration.db")
         self.format_keys = ['did', 'login', 'name', 'gender', 'old', 'desc', 'way', 'inter', 'move', 'skill', 'soc']
@@ -56,8 +57,8 @@ class Accepting(commands.Cog):
 
         }
 
-        for modal_key in self["modals"].keys():
-            for field in self["modals"][modal_key]["text_inputs"]:
+        for modal_key in self.cfg["modals"].keys():
+            for field in self.cfg["modals"][modal_key]["text_inputs"]:
                 self.fields[field["custom_id"][1:]] = field["label"]
 
     # lib methods for class -> Accepting
@@ -212,7 +213,7 @@ class Accepting(commands.Cog):
         await inter.response.defer()
 
     async def func_open_dm(self, inter: disnake.MessageInteraction) -> None:
-        category = inter.guild.get_channel(1225137236366856315) # категория для дм
+        category = inter.guild.get_channel(self.bot.cfg["discord_ids"]["dm_category"]) # категория для дм
         user = inter.guild.get_member(self.users[self.user_panel_id]["did"])
         overwrites = {
             inter.guild.get_role(872884999047745556): disnake.PermissionOverwrite(view_channel=True),  # роль проверяющего

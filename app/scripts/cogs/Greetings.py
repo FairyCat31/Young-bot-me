@@ -4,7 +4,7 @@ from disnake.ext import commands
 class Greeting(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.hello_channel_id = 872898518589767752
+        self.hello_channel_id = bot.cfg["discord_ids"]["greeting_ch"]
 
     @commands.Cog.listener()
     async def on_member_join(self, member):

@@ -5,7 +5,7 @@ from disnake.ui import Modal, TextInput, Button
 from components.dbmanager import DatabaseManager
 from disnake import TextInputStyle as tis
 from asyncio import sleep
-from ..components.smartdisnake import *
+from components.smartdisnake import *
 
 
 class RegModal(SmartModal):
@@ -48,7 +48,7 @@ class Registration(commands.Cog):
         self.bot = bot
         self.user_responses = {}
         self.delete_sub_message = {}
-        self.cfg = self.bot.cfg.buffer[bot.name]
+        self.cfg = self.bot.cfg
         self.dbm = DatabaseManager("registration.db")
         self.dbm.save_db_init()
         self.dbm.connect()
@@ -63,7 +63,7 @@ class Registration(commands.Cog):
         if info["igender"] not in self.cfg["genders"]:
             return False, self.cfg["replics"]["auto_moder_wr_gender_ft"]
 
-        if inter.user.get_role(1224805920140300389):
+        if inter.user.get_role(self.bot.cfg["discord_ids"]["player_role"]): # роль игрока
             return False, self.cfg["replics"]["auto_moder_all_ver"]
 
         return True, ""
@@ -128,7 +128,7 @@ class Registration(commands.Cog):
                     inline=self.cfg["embeds"]["request_reject"]["other"]["field"]["inline"],
                     )
 
-                await self.bot.get_channel(1224426633767817236).send(content=inter.user.mention, embed=embed)
+                await self.bot.get_channel(self.bot.cfg["discord_ids"]["ver_result_ch"]).send(content=inter.user.mention, embed=embed) # результаты верифа
                 return
 
             self.dbm.user_add(table="PendingUsers", discord_id=inter.user.id, ud=self.user_responses[str(inter.user.id)]["result"])

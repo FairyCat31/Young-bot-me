@@ -7,13 +7,12 @@ from components.logger import Logger
 
 
 class MEBot(commands.Bot):
-    def __init__(self, name: str, cfg: JsonManager, *args, **kwargs):
+    def __init__(self, name: str, cfg: dict, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.start_time = time()
         self.name = name
         self.cfg = cfg
         self.log = Logger(name=self.name, file_name=self.name)
-        self.cfg.procedure_for_bots(self.name)
 
     def __repr__(self):
         return self.name
@@ -21,7 +20,7 @@ class MEBot(commands.Bot):
     async def on_ready(self):
         end_time = time()
 
-        self.log.printf(self.cfg.replics["start"].format(user=self.user, during_time=end_time-self.start_time))
+        self.log.printf(self.cfg["replics"]["start"].format(user=self.user, during_time=end_time-self.start_time))
 
 
 class BotManager():
@@ -45,7 +44,7 @@ class BotManager():
     def init_bot(self, name_bot, **kwargs):
         self.log.printf(f"[&] Start to initialize a bot \"{name_bot}\"")
         intents = disnake.Intents.all()
-        self.BotsCont[name_bot] = MEBot(name=name_bot, cfg=self.cfg, intents=intents, **kwargs)
+        self.BotsCont[name_bot] = MEBot(name=name_bot, cfg=self.cfg.buffer[name_bot], intents=intents, **kwargs)
         for cog in self.cfg.buffer[name_bot]["cogs"]:
             self.log.printf(f"[&] Import \"{cog}\" to bot \"{name_bot}\"")
             self.BotsCont[name_bot].load_extension(cog)

@@ -30,7 +30,7 @@ class JsonManager():
     def write_cfg(self, path: str, dictionary: dict) -> None:
         with open(path, "w", encoding="utf-8") as f:
             try:
-                dump(dictionary, f)
+                dump(dictionary, f, indent=2)
             except Exception as e:
                 print(e)
 
@@ -40,5 +40,6 @@ class JsonManager():
     def dload_cfg(self, short_name: str) -> None:
         self.load_cfg(path=self.pjson+short_name)
 
-    def dwrite_cfg(self, short_name: str, dictionary: dict) -> None:
-        self.write_cfg(path=self.pjson+short_name, dictionary=dictionary)
+    def dwrite_cfg(self, dictionary: dict, short_name: str = None) -> None:
+
+        self.write_cfg(path=self.pjson+(self.name if short_name is None else short_name), dictionary=dictionary)
