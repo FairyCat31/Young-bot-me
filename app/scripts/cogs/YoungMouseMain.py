@@ -11,12 +11,9 @@ class YoungMouseMain(commands.Cog):
         bot.cfg["discord_ids"] = self.jsm.buffer
         self.req_fields = ["setup", "dm_category", "moder_role", "member_role", "player_role", "ver_result_ch", "greeting_ch"]
 
-    # категория для дм
-    # роль проверяющего
-    # роль участника
-    # роль игрока
-    # текст канал вериф резалт
-    # текст канал приветствия
+    def reload(self):
+        print("ymm перезагружен")
+
     """
     "dm_category": "категория для дм"
     "moder_role": "роль проверяющего"
@@ -25,6 +22,13 @@ class YoungMouseMain(commands.Cog):
     "ver_result_ch": "текст канал вериф резалт"
     "greeting_ch": "текст канал приветствия"
     """
+
+    @commands.slash_command(name="msg",
+                            description="-")
+    @commands.default_member_permissions(administrator=True)
+    async def msg(self, inter: ApplicationCommandInteraction, text: str, channel: str = "1219502611896467482"):
+        await inter.guild.get_channel(int(channel)).send(content=text)
+        await inter.response.send_message(content=f"send \"{text}\" to channel (id: {channel})", delete_after=10)
 
     @commands.slash_command(name="setup_show_config",
                             description="Показать текущие настройки")
@@ -46,7 +50,6 @@ class YoungMouseMain(commands.Cog):
             self.bot.cfg["discord_ids"]["setup"] = True
 
         self.jsm.dwrite_cfg(dictionary=self.bot.cfg["discord_ids"])
-
 
     @commands.slash_command(name="setup_dm_category",
                             description="Установить категорию для создания дм")
@@ -105,8 +108,7 @@ class YoungMouseMain(commands.Cog):
     @commands.slash_command(name="setup_all",
                             description="Настройка всех параметров бота")
     @commands.default_member_permissions(administrator=True)
-    async def multi_setup(self, inter: ApplicationCommandInteraction
-                    ):
+    async def multi_setup(self, inter: ApplicationCommandInteraction ):
         pass
 
 

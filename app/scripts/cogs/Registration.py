@@ -10,7 +10,7 @@ from components.smartdisnake import *
 
 class RegModal(SmartModal):
     def __init__(self, cfg: dict):
-        super().__init__(cfg=cfg["modals"]["pers_info"])
+        super().__init__(modal_cfg=cfg["modals"]["pers_info"])
         self.bls = cfg["button_labels"]
         self.rcs = cfg["replics"]
         self.user_response = None
@@ -32,7 +32,7 @@ class GameModal(SmartModal):
     def __init__(self, cfg: dict):
         self.cfg = cfg
         # print(self.cfg)
-        super().__init__(cfg=self.cfg["modals"]["gameplay"])
+        super().__init__(modal_cfg=self.cfg["modals"]["gameplay"])
         self.user_response = None
 
     async def callback(self, inter: ModalInteraction):
@@ -53,10 +53,15 @@ class Registration(commands.Cog):
         self.dbm.save_db_init()
         self.dbm.connect()
 
+    def reload(self):
+        print("reg перезагружен")
+
     async def auto_moderate(self, inter) -> (bool, str):
         info = self.user_responses[str(inter.user.id)]["result"]
         try:
             int(info["iold"])
+            if int(info["iold"]) < 1:
+                return False, self.cfg["replics"]["auto_moder_wr_old_ft"]
         except ValueError:
             return False, self.cfg["replics"]["auto_moder_wr_old_ft"]
 
@@ -69,6 +74,7 @@ class Registration(commands.Cog):
         return True, ""
 
     @commands.slash_command()
+    @commands.default_member_permissions(administrator=True)
     async def reg(self, inter: CommandInter):
 
         await inter.response.send_message(
@@ -122,6 +128,7 @@ class Registration(commands.Cog):
 
             if not is_accept:
                 embed = SmartEmbed(cfg=self.cfg["embeds"]["request_reject"])
+                embed.title = self.cfg["embeds"]["request_reject"]["title"].format(user_name=inter.user.name)
                 embed.add_field(
                     name=self.cfg["embeds"]["request_reject"]["other"]["field"]["name"],
                     value=self.cfg["embeds"]["request_reject"]["other"]["field"]["value"].format(reason=reason),

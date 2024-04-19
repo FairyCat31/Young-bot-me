@@ -24,7 +24,7 @@ class ReasonModal(SmartModal):
     def __init__(self, cfg: dict):
         # The details of the modal, and its components
         self.ans = None
-        super().__init__(cfg=cfg)
+        super().__init__(modal_cfg=cfg)
 
     async def callback(self, inter: disnake.ModalInteraction):
         for _, value in inter.text_values.items():
@@ -34,11 +34,15 @@ class ReasonModal(SmartModal):
 
 
 class Accepting(commands.Cog):
+
+    dio = {}
+
     def __init__(self, bot):
         self.bot = bot
         self.panel = None
         self.user_dimension = {}
         self.cfg = bot.cfg
+        self.__class__.dio = self.cfg["discord_ids"]
         # self.cfg = JsonManager().buffer[self.bot.name]
         # self.cfg.dload_cfg(short_name="bots_properties.json")
         self.fields = {}
@@ -50,6 +54,7 @@ class Accepting(commands.Cog):
             "previous_user": self.func_previous_user,
             "next_user": self.func_next_user,
             "open_dm": self.func_open_dm,
+            "close_dm": self.func_close_dm,
             "close_panel": self.func_close_panel,
             "accept": self.func_accept,
             "reject": self.func_reject,
@@ -60,6 +65,20 @@ class Accepting(commands.Cog):
         for modal_key in self.cfg["modals"].keys():
             for field in self.cfg["modals"][modal_key]["text_inputs"]:
                 self.fields[field["custom_id"][1:]] = field["label"]
+
+    def reload(self):
+        self.cfg = self.bot.cfg
+        self.__class__.dio = self.cfg["discord_ids"]
+        self.bot.log.printf(f"Modal {self.__class__.__name__} was reloaded")
+
+    async def is_have_ids(self, *args):
+
+        for key_discord_el in args:
+            if self.bot.cfg["discord_ids"].get(key_discord_el) is None:
+                self.bot.log.printf(f"[*/Accepting] отмена выполнения ~ {key_discord_el}")
+                return False
+
+        return True
 
     # lib methods for class -> Accepting
 
@@ -72,7 +91,7 @@ class Accepting(commands.Cog):
                     pass
 
                 member = inter.guild.get_member(self.users[self.user_panel_id]["did"])
-                channel = inter.guild.get_channel(1224426633767817236)  # результаты верифа
+                channel = inter.guild.get_channel(self.bot.cfg["discord_ids"]["ver_result_ch"])  # результаты верифа
                 if reject:
                     embed = await self.get_reject_embed(inter=inter, member=member, reason=reason)
                 if accept:
@@ -99,7 +118,7 @@ class Accepting(commands.Cog):
 
         for user_parse in self.dbm.users_get_id(table="PendingUsers"):
             user = {}
-            for par in range(11):
+            for par in range(len(user_parse)):
                 user[self.format_keys[par]] = user_parse[par]
 
             self.users.append(user)
@@ -158,7 +177,7 @@ class Accepting(commands.Cog):
             color=disnake.Colour.blurple(),
         )
         embed.set_footer(
-            text=self.cfg["embeds"]["request_accept"]["other"]["footer_text"].format(moder_name),
+            text=self.cfg["embeds"]["request_accept"]["other"]["footer_text"].format(moder_name=moder_name),
             icon_url=moder_avatar,
         )
         embed.set_thumbnail(self.bot.get_user(user_data['did']).avatar.url)
@@ -174,7 +193,7 @@ class Accepting(commands.Cog):
         embed.color = disnake.Colour.brand_green()
 
         embed.set_footer(
-            text=self.cfg["embeds"]["request_accept"]["other"]["footer_text"].format(inter.user.name),
+            text=self.cfg["embeds"]["request_accept"]["other"]["footer_text"].format(moder_name=inter.user.name),
             icon_url=inter.user.avatar.url,
         )
 
@@ -190,12 +209,11 @@ class Accepting(commands.Cog):
                         inline=self.cfg["embeds"]["request_reject"]["other"]["field"]["inline"])
 
         embed.set_footer(
-            text=self.cfg["embeds"]["request_accept"]["other"]["footer_text"].format(inter.user.name),
+            text=self.cfg["embeds"]["request_accept"]["other"]["footer_text"].format(moder_name=inter.user.name),
             icon_url=inter.user.avatar.url,
         )
 
         return embed
-
 
     async def get_empty_embed(self):
         embed = SmartEmbed(cfg=self.cfg["embeds"]["empty_embed"])
@@ -216,28 +234,37 @@ class Accepting(commands.Cog):
         category = inter.guild.get_channel(self.bot.cfg["discord_ids"]["dm_category"]) # категория для дм
         user = inter.guild.get_member(self.users[self.user_panel_id]["did"])
         overwrites = {
-            inter.guild.get_role(872884999047745556): disnake.PermissionOverwrite(view_channel=True),  # роль проверяющего
-            inter.guild.get_role(1225140475850129508): disnake.PermissionOverwrite(view_channel=False),  # роль участника
-            inter.guild.me: disnake.PermissionOverwrite(view_channel=True),
+            inter.guild.get_role(self.bot.cfg["discord_ids"]["moder_role"]): disnake.PermissionOverwrite(view_channel=True),  # роль проверяющего
+            inter.guild.get_role(self.bot.cfg["discord_ids"]["member_role"]): disnake.PermissionOverwrite(view_channel=False),  # роль участника
+            inter.guild.default_role: disnake.PermissionOverwrite(view_channel=False),
+            inter.guild.me: disnake.PermissionOverwrite(view_channel=True, embed_links=True),
             user: disnake.PermissionOverwrite(view_channel=True)
         }
-        text_ch = await category.create_text_channel(name=self.cfg["replics"]["dm_ch_name"].format(dm_ch_name=user.name), overwrites=overwrites)
+        text_ch = await category.create_text_channel(name=self.cfg["replics"]["dm_ch_name"].format(member_name=user.name), overwrites=overwrites)
         embed = await self.get_embed(moder_name=inter.user.name, moder_avatar=inter.user.avatar.url, uid=self.user_panel_id)
-        await text_ch.send(content=self.cfg["replics"]["dm_start_message"].format(user_mention=user.mention, moder_mention=inter.user.mention, role_moder=inter.guild.get_role(872884999047745556)),
-                           embed=embed)
+        await text_ch.send(content=self.cfg["replics"]["dm_start_message"].format(user_mention=user.mention, moder_mention=inter.user.mention, role_moder=inter.guild.get_role(self.bot.cfg["discord_ids"]["moder_role"]).mention),
+                           embed=embed,
+                           components=[
+                               Button(label="Закрыть дм", style=disnake.ButtonStyle.primary, custom_id="close_dm",  emoji="⏹")
+                           ]
+                           )
+        await inter.response.defer()
+
+    async def func_close_dm(self, inter: disnake.MessageInteraction) -> None:
+        await inter.channel.delete()
         await inter.response.defer()
 
     @helper_accept_reject(accept=True)
     async def func_accept(self, inter: disnake.MessageInteraction, member: disnake.Member, *args, **kwargs) -> None:
         await member.edit(nick=self.users[self.user_panel_id]["login"])
-        await member.add_roles(inter.guild.get_role(872898013759172678)) # роль игрока
+        await member.add_roles(inter.guild.get_role(self.bot.cfg["discord_ids"]["player_role"])) # роль игрока
 
     @helper_accept_reject(reject=True)
     async def func_reject(self, inter: disnake.MessageInteraction, reason: str = "по личному решению администрации", *args, **kwargs) -> None:
         pass
 
     async def func_reject_reason(self, inter: disnake.MessageInteraction) -> None:
-        modal = ReasonModal()
+        modal = ReasonModal(cfg=self.cfg["modals"]["reason_reject"])
         await inter.response.send_modal(modal=modal)
         while modal.ans is None:
             await sleep(0.5)
@@ -260,6 +287,15 @@ class Accepting(commands.Cog):
         description="Команда вызова панели для одобрения заявки",
     )
     async def panel(self, inter: disnake.ApplicationCommandInteraction):
+        if inter.user.get_role(self.cfg["discord_ids"].get("moder_role")) is None:
+            await inter.response.send_message("ты далбаёб у тя прав нету феминистка ты долбанная")
+            return
+
+        res = await self.is_have_ids("dm_category", "moder_role", "member_role", "player_role", "ver_result_ch")
+        if not res:
+            await inter.response.defer()
+            return
+
         self.user_panel_id = 0
         await self.get_users()
         await inter.response.send_message(content=self.cfg["replics"]["open_panel"], delete_after=3)
@@ -268,9 +304,13 @@ class Accepting(commands.Cog):
 
     @commands.Cog.listener(name="on_button_click")
     async def when_button_click(self, inter: disnake.MessageInteraction):
-        if inter.component.custom_id not in ["previous_user", "next_user", "open_dm", "close_panel", "accept", "reject", "reject_reason"]:
+        if inter.component.custom_id in ["game_modal_button", "user_modal_button"]:
             return
-
+        if inter.user.get_role(self.cfg["discord_ids"].get("moder_role")) is None:
+            await inter.response.send_message("ты далбаёб у тя прав нету феминистка ты долбанная")
+            return
+        if inter.component.custom_id not in ["previous_user", "next_user", "open_dm", "close_dm", "close_panel", "accept", "reject", "reject_reason"]:
+            return
         await self.func_dict[inter.component.custom_id](inter=inter)
 
 

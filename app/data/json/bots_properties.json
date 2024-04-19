@@ -11,7 +11,7 @@
       "auto_moder_wr_gender_ft": "Неверный формат пола",
       "auto_moder_all_ver": "Вы уже авторизованы",
       "auto_moder_def_reject": "по личному решению администрации",
-      "dm_start_message": "{user_mention} доброго времени суток\\nПо вашей заявке есть вопросы у {moder_mention}\\nТакже учтите, что другие проверяющие({role_moder}) могут задать вам вопросы",
+      "dm_start_message": "{user_mention} доброго времени суток\nПо вашей заявке есть вопросы у {moder_mention}\nТакже учтите, что другие проверяющие({role_moder}) могут задать вам вопросы",
       "close_panel": "Панель закрыта",
       "open_panel": "Открытие панели...",
       "open_panel_wait": "Подождите...",
@@ -45,7 +45,7 @@
         "fields": [
           {
             "name": "Стадия заявки",
-            "value": "Заявка проходит модерацию",
+            "value": "Отклонена",
             "inline": false
           }
         ],
@@ -103,7 +103,7 @@
           },
           {
             "label": "Твой пол?",
-            "placeholder": "М/Ж",
+            "placeholder": "М или Ж",
             "max_length": 1,
             "min_length": 1,
             "required": true,
@@ -113,7 +113,7 @@
           {
             "label": "Сколько тебе лет?",
             "placeholder": "17",
-            "max_length": 3,
+            "max_length": 2,
             "min_length": 1,
             "required": true,
             "custom_id": "iold",

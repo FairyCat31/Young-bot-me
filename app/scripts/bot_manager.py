@@ -45,9 +45,11 @@ class BotManager():
         self.log.printf(f"[&] Start to initialize a bot \"{name_bot}\"")
         intents = disnake.Intents.all()
         self.BotsCont[name_bot] = MEBot(name=name_bot, cfg=self.cfg.buffer[name_bot], intents=intents, **kwargs)
+
         for cog in self.cfg.buffer[name_bot]["cogs"]:
             self.log.printf(f"[&] Import \"{cog}\" to bot \"{name_bot}\"")
             self.BotsCont[name_bot].load_extension(cog)
+
         token = self.env_val[f"{name_bot}_TOKEN"]
         self.log.printf(f"[&] Successful initialization of bot \"{name_bot}\"")
         self.log.printf(f"[&] Starting bot \"{name_bot}\"")
