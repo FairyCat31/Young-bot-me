@@ -56,6 +56,15 @@ class Registration(commands.Cog):
     def reload(self):
         print("reg перезагружен")
 
+    async def is_have_ids(self, *args):
+
+        for key_discord_el in args:
+            if self.bot.cfg["discord_ids"].get(key_discord_el) is None:
+                self.bot.log.printf(f"[*/Registration] отмена выполнения ~ {key_discord_el}")
+                return False
+
+        return True
+
     async def auto_moderate(self, inter) -> (bool, str):
         info = self.user_responses[str(inter.user.id)]["result"]
         try:
@@ -68,7 +77,7 @@ class Registration(commands.Cog):
         if info["igender"] not in self.cfg["genders"]:
             return False, self.cfg["replics"]["auto_moder_wr_gender_ft"]
 
-        if inter.user.get_role(self.bot.cfg["discord_ids"]["player_role"]): # роль игрока
+        if inter.user.get_role(self.bot.cfg["discord_ids"]["player_role"]):  # роль игрока
             return False, self.cfg["replics"]["auto_moder_all_ver"]
 
         return True, ""
@@ -76,6 +85,10 @@ class Registration(commands.Cog):
     @commands.slash_command()
     @commands.default_member_permissions(administrator=True)
     async def reg(self, inter: CommandInter):
+        res = await self.is_have_ids("ver_result_ch")
+        if not res:
+            inter.response.defer()
+            return
 
         await inter.response.send_message(
             content=self.cfg["replics"]["reg_command_response"],
@@ -86,6 +99,11 @@ class Registration(commands.Cog):
 
     @commands.Cog.listener(name="on_button_click")
     async def when_button_click(self, inter: MessageInteraction):
+        res = await self.is_have_ids("ver_result_ch")
+        if not res:
+            inter.response.defer()
+            return
+
         if inter.component.custom_id not in ["game_modal_button", "user_modal_button"]:
             # We filter out any other button presses except
             # the components we wish to process.
@@ -113,10 +131,6 @@ class Registration(commands.Cog):
                 if g_reg.user_response:
                     self.user_responses[str(inter.user.id)]["game_data"] = g_reg.user_response
                     break
-            # print(self.user_responses[str(inter.user.id)])
-
-            # json_manager = JsonManager()
-            # json_manager.dload_cfg(short_name="pending_user.json")
 
             self.user_responses[str(inter.user.id)]["result"] = {}
             for key, value in self.user_responses[str(inter.user.id)]["user_data"].items():

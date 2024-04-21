@@ -7,7 +7,7 @@ py scripts/update.py
 if %ERRORLEVEL%==1 goto end
 if %ERRORLEVEL%==2 goto restart
 if %ERRORLEVEL%==3 goto frestart
-py scripts/main.py
+py scripts/main.py -name ElderMouse
 goto end
 :frestart
 cd ..

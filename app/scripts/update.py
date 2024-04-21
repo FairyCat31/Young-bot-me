@@ -46,6 +46,7 @@ with open(path_to_reg, "r") as file:
         try:
             import_module(l_n_v[0].replace("python-", ""))
         except ImportError:
+            print(l_n_v[0])
             req += f"{lib_name_ver}\n"
 
 print("[$] Status: complete!")

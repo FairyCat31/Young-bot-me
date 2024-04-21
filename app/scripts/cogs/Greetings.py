@@ -1,4 +1,5 @@
 from disnake.ext import commands
+from random import randint
 
 
 class Greeting(commands.Cog):
@@ -25,8 +26,16 @@ class Greeting(commands.Cog):
         res = await self.is_have_ids("greeting_ch")
         if not res:
             return
-        await self.bot.get_channel(self.bot.cfg["discord_ids"]["greeting_ch"]).send(f"welcome to the server, {member.mention}")
-        await member.edit(nick=member.name)
+
+        greeting_replics = self.bot.cfg["replics"]["greetings"]  # get all replics
+        greeting_random_replic = greeting_replics[randint(0, len(greeting_replics)-1)]  # random choose one
+        greeting_random_replic = greeting_random_replic.format(user_mention=member.mention) # format replic (change {user_mention} on real mention)
+        greeting_end_replic = self.bot.cfg["replics"]["greeting_info"]  # getting static info replic
+        greeting_replic = f"{greeting_random_replic}\n\n{greeting_end_replic}"
+        greeting_channel = self.bot.get_channel(self.bot.cfg["discord_ids"]["greeting_ch"])  # get greeting channel
+
+        await greeting_channel.send(content=greeting_replic)  # send replic to chat
+        await member.edit(nick=member.name)  # edit user nick to his id
 
 
 def setup(bot: commands.Bot):

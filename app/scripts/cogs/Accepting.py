@@ -287,13 +287,13 @@ class Accepting(commands.Cog):
         description="Команда вызова панели для одобрения заявки",
     )
     async def panel(self, inter: disnake.ApplicationCommandInteraction):
-        if inter.user.get_role(self.cfg["discord_ids"].get("moder_role")) is None:
-            await inter.response.send_message("ты далбаёб у тя прав нету феминистка ты долбанная")
-            return
-
         res = await self.is_have_ids("dm_category", "moder_role", "member_role", "player_role", "ver_result_ch")
         if not res:
             await inter.response.defer()
+            return
+
+        if inter.user.get_role(self.cfg["discord_ids"].get("moder_role")) is None:
+            await inter.response.send_message(content=self.cfg["replics"]["have_not_enough_rights"], ephemeral=True)
             return
 
         self.user_panel_id = 0
@@ -304,13 +304,13 @@ class Accepting(commands.Cog):
 
     @commands.Cog.listener(name="on_button_click")
     async def when_button_click(self, inter: disnake.MessageInteraction):
-        if inter.component.custom_id in ["game_modal_button", "user_modal_button"]:
-            return
-        if inter.user.get_role(self.cfg["discord_ids"].get("moder_role")) is None:
-            await inter.response.send_message("ты далбаёб у тя прав нету феминистка ты долбанная")
-            return
         if inter.component.custom_id not in ["previous_user", "next_user", "open_dm", "close_dm", "close_panel", "accept", "reject", "reject_reason"]:
             return
+
+        if inter.user.get_role(self.cfg["discord_ids"].get("moder_role")) is None:
+            await inter.response.send_message(content=self.cfg["replics"]["have_not_enough_rights"], ephemeral=True)
+            return
+
         await self.func_dict[inter.component.custom_id](inter=inter)
 
 
