@@ -3,11 +3,12 @@
 call env/Scripts/activate
 cd app/
 :restart
-py scripts/update.py
+python scripts/update.py
+cls
 if %ERRORLEVEL%==1 goto end
 if %ERRORLEVEL%==2 goto restart
 if %ERRORLEVEL%==3 goto frestart
-py scripts/main.py -name ElderMouse
+python scripts/main.py -name ElderMouse
 goto end
 :frestart
 cd ..

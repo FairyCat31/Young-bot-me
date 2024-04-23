@@ -1,4 +1,5 @@
 from importlib import import_module
+from importlib.metadata import packages_distributions
 from os import system, chdir
 from sys import prefix
 
@@ -31,7 +32,7 @@ if "env" != prefix.split("\\")[-1]:
     print("""[$] Status: complete!
 [!] Restarting...
 [$] Stopping update manager...""")
-    exit(36)
+    exit(3)
 
 
 print("""[$] Status: complete!
@@ -44,7 +45,17 @@ with open(path_to_reg, "r") as file:
         c = 0
         l_n_v = lib_name_ver.split("==")
         try:
-            import_module(l_n_v[0].replace("python-", ""))
+            p_d = packages_distributions()
+            import_name = ""
+            for lkey in p_d.keys():
+                # print(p_d[lkey][0], lkey, l_n_v[0])
+                if p_d[lkey][0] == l_n_v[0]:
+                    import_name = lkey
+                
+            if not import_name:
+                raise ImportError
+            
+            import_module(import_name)
         except ImportError:
             print(l_n_v[0])
             req += f"{lib_name_ver}\n"
