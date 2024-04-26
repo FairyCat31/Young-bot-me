@@ -82,36 +82,17 @@ class Accepting(commands.Cog):
 
     # lib methods for class -> Accepting
 
-    def helper_accept_reject(accept: bool = False, reject: bool = False):
-        def decorator(func):
-            async def wrapper(self, inter: disnake.ModalInteraction, reason: str = "по личному решению администрации", **kwargs):
-                try:
-                    await inter.response.defer()
-                except disnake.errors.InteractionResponded:
-                    pass
+    async def helper_accept_reject(self, inter) -> (disnake.User, disnake.Member, disnake.ChannelType.text):
+        try:
+            await inter.response.defer()
+        except disnake.errors.InteractionResponded:
+            pass
 
-                member = inter.guild.get_member(self.users[self.user_panel_id]["did"])
-                channel = inter.guild.get_channel(self.bot.cfg["discord_ids"]["ver_result_ch"])  # результаты верифа
-                if reject:
-                    embed = await self.get_reject_embed(inter=inter, member=member, reason=reason)
-                if accept:
-                    embed = await self.get_accept_embed(inter=inter, member=member)
+        user = self.bot.get_user(self.users[self.user_panel_id]["did"])
+        member = inter.guild.get_member(self.users[self.user_panel_id]["did"])
+        channel = inter.guild.get_channel(self.bot.cfg["discord_ids"]["ver_result_ch"])  # результаты верифа
 
-                await channel.send(content=member.mention, embed=embed)
-
-                await func(self, inter=inter, reason=reason, member=member, **kwargs)
-
-                await self.del_from_db()
-                if accept:
-                    await self.add_to_db()
-
-                del self.users[self.user_panel_id]
-
-                await self.save_set_user(inter=inter, user_panel_id=self.user_panel_id)
-
-            return wrapper
-
-        return decorator
+        return user, member, channel
 
     async def get_users(self) -> None:
         self.dbm.connect()
@@ -137,8 +118,7 @@ class Accepting(commands.Cog):
                 pass
                 embed = await self.get_empty_embed()
                 view = TestView(block_full=True)
-                await self.panel.edit(embed=embed, view=view)
-
+                await self.panel.edit(content="", embed=embed, view=view)
             else:
                 await self.set_user(inter=inter, user_panel_id=user_panel_id-1)
         else:
@@ -146,6 +126,10 @@ class Accepting(commands.Cog):
 
     async def set_user(self, inter: disnake.MessageInteraction, user_panel_id: int = 0):
         self.user_panel_id = user_panel_id
+
+        if inter.guild.get_member(self.users[self.user_panel_id]["did"]) is None:
+            await self.func_reject(inter=inter, reason="юзер покикул дс сервер")
+            return
         embed = await self.get_embed(moder_name=inter.user.name, moder_avatar=inter.user.display_avatar.url, uid=self.user_panel_id)
         view = await self.get_view(user_panel_id=self.user_panel_id)
         await self.panel.edit(content="", embed=embed, view=view)
@@ -254,14 +238,32 @@ class Accepting(commands.Cog):
         await inter.channel.delete()
         await inter.response.defer()
 
-    @helper_accept_reject(accept=True)
-    async def func_accept(self, inter: disnake.MessageInteraction, member: disnake.Member, *args, **kwargs) -> None:
+    async def func_accept(self, inter: disnake.MessageInteraction) -> None:
+        # get useful vars
+        _, member, channel = await self.helper_accept_reject(inter=inter)
+        # delete user from pending and add to accepted
+        await self.del_from_db()
+        await self.add_to_db()
+        # get role player
         await member.edit(nick=self.users[self.user_panel_id]["login"])
-        await member.add_roles(inter.guild.get_role(self.bot.cfg["discord_ids"]["player_role"])) # роль игрока
+        await member.add_roles(inter.guild.get_role(self.bot.cfg["discord_ids"]["player_role"]))
+        # get and send embed with result
+        embed = await self.get_accept_embed(inter=inter, member=member)
+        await channel.send(content=member.mention, embed=embed)
+        # del user from users and go to next user
+        del self.users[self.user_panel_id]
+        await self.save_set_user(inter=inter, user_panel_id=self.user_panel_id)
 
-    @helper_accept_reject(reject=True)
-    async def func_reject(self, inter: disnake.MessageInteraction, reason: str = "по личному решению администрации", *args, **kwargs) -> None:
-        pass
+    async def func_reject(self, inter: disnake.MessageInteraction, reason: str = "по личному решению администрации") -> None:
+        user, _, channel = await self.helper_accept_reject(inter=inter)
+        # delete user from pending
+        await self.del_from_db()
+        # get and send embed with result
+        embed = await self.get_reject_embed(inter=inter, member=user, reason=reason)
+        await channel.send(content=f'<@{self.users[self.user_panel_id]["did"]}>', embed=embed)
+        # del user and go to next
+        del self.users[self.user_panel_id]
+        await self.save_set_user(inter=inter, user_panel_id=self.user_panel_id)
 
     async def func_reject_reason(self, inter: disnake.MessageInteraction) -> None:
         modal = ReasonModal(cfg=self.cfg["modals"]["reason_reject"])
