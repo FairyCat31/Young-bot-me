@@ -214,7 +214,7 @@
   },
   "ElderMouse": {
     "command_prefix": ".",
-    "cogs": ["cogs.Main"],
+    "cogs": ["cogs.Main", "cogs.RconSession"],
     "replics": {
       "start": "multiline\n> Successful starting\n> I logged as {user}\n> Starting during: {during_time}"
     }

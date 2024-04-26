@@ -2,6 +2,6 @@
 
 source env/bin/activate
 cd app/
-python3.11 scripts/main.py
+python3 scripts/main.py -name YoungMouse
 
 read -p "Press any key..."
