@@ -146,7 +146,7 @@ class Accepting(commands.Cog):
 
     async def set_user(self, inter: disnake.MessageInteraction, user_panel_id: int = 0):
         self.user_panel_id = user_panel_id
-        embed = await self.get_embed(moder_name=inter.user.name, moder_avatar=inter.user.avatar.url, uid=self.user_panel_id)
+        embed = await self.get_embed(moder_name=inter.user.name, moder_avatar=inter.user.display_avatar.url, uid=self.user_panel_id)
         view = await self.get_view(user_panel_id=self.user_panel_id)
         await self.panel.edit(content="", embed=embed, view=view)
 
@@ -180,7 +180,7 @@ class Accepting(commands.Cog):
             text=self.cfg["embeds"]["request_accept"]["other"]["footer_text"].format(moder_name=moder_name),
             icon_url=moder_avatar,
         )
-        embed.set_thumbnail(self.bot.get_user(user_data['did']).avatar.url)
+        embed.set_thumbnail(self.bot.get_user(user_data['did']).display_avatar.url)
 
         for i in range(1, len(self.format_keys)):
             embed.add_field(name=self.fields[self.format_keys[i]], value=user_data[self.format_keys[i]], inline=False)

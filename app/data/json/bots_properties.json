@@ -101,8 +101,8 @@
           {
             "label": "Игровой никнейм (логин на сайте)",
             "placeholder": "_pyth",
-            "max_length": 25,
-            "min_length": 5,
+            "max_length": 50,
+            "min_length": 1,
             "required": true,
             "custom_id": "ilogin",
             "style": "short"
@@ -136,8 +136,8 @@
           },
           {
             "label": "Расскажи о себе",
-            "placeholder": "Пай",
-            "max_length": 300,
+            "placeholder": "(от 50 слов)",
+            "max_length": 3999,
             "min_length": 10,
             "required": true,
             "custom_id": "idesc",
@@ -151,17 +151,17 @@
         "text_inputs": [
           {
             "label": "Откуда ты узнал о нашем проекте?",
-            "placeholder": "наткнулся случайно на сайт",
-            "max_length" : 50,
+            "placeholder": "(от 25 слов)",
+            "max_length" : 3999,
             "min_length": 10,
             "required": true,
             "custom_id": "iway",
-            "style": "short"
+            "style": "long"
           },
           {
             "label": "Что тебя заинтересовало в нашем проекте?",
-            "placeholder": "Топовая сборка с create",
-            "max_length" : 150,
+            "placeholder": "(от 50 слов)",
+            "max_length" : 3999,
             "min_length": 5,
             "required": true,
             "custom_id": "iinter",
@@ -169,29 +169,29 @@
           },
           {
             "label": "Что ты планируешь делать на нашем сервере?",
-            "placeholder": "Строить на сервере-create проекты",
-            "max_length" : 150,
+            "placeholder": "(от 50 слов)",
+            "max_length" : 3999,
             "min_length": 10,
             "required": true,
             "custom_id": "imove",
             "style": "long"
           },          {
             "label": "Какой у тебя опыт выживания с модами?",
-            "placeholder": "играл с create\nОднако не пробовал играть с адонами",
-            "max_length" : 50,
+            "placeholder": "(от 25 слов)",
+            "max_length" : 3999,
             "min_length": 5,
             "required": true,
             "custom_id": "iskill",
-            "style": "short"
+            "style": "long"
           },
           {
             "label": "Будешь выживать в одиночку или с кем-нибудь?",
-            "placeholder": "пока один, дальше поглядим",
-            "max_length" : 50,
+            "placeholder": "(от 10 слов)",
+            "max_length" : 3999,
             "min_length": 3,
             "required": true,
             "custom_id": "isoc",
-            "style": "short"
+            "style": "long"
           }
         ]
       },
