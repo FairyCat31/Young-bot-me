@@ -216,7 +216,15 @@
     "command_prefix": ".",
     "cogs": ["cogs.Main", "cogs.RconSession"],
     "replics": {
-      "start": "multiline\n> Successful starting\n> I logged as {user}\n> Starting during: {during_time}"
+      "start": "multiline\n> Successful starting\n> I logged as {user}\n> Starting during: {during_time}",
+      "enough_rights": "У тебя недостаточно прав, чтобы воспользоваться этой командой :no:",
+      "err_connect": "[*\\RconSession] cause error( {response_code} ) to connect >>> {rcon_host}:{rcon_port}",
+      "session_start": "Запущена сессия {rcon_host}:{rcon_port}",
+      "list_session_part": "<#{key}>\nhost >>> {rcon_host}\nport >>> {rcon_port}\npass >>> {rcon_password}\n",
+      "session_stop": "Сессия закрыта {rcon_host}:{rcon_port}",
+      "session_not_found": "Не найдена сессия с айди канала {ch_id}",
+      "wait_response_from_command": "Команда отправлена :white_check_mark:\nЖдите ответа",
+      "session_reload": "Все сессии были перезагружены"
     }
   }
 }

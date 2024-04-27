@@ -12,7 +12,6 @@ class SmartRconSession:
         self.rcon_host = rcon_host
         self.rcon_port = int(rcon_port)
         self.rcon_password = rcon_password
-        print(self.rcon_host, self.rcon_port, self.rcon_password)
         self.client = Client(self.rcon_host, self.rcon_port, self.rcon_password)
 
     async def connect(self) -> (int, str):
@@ -41,14 +40,13 @@ class SmartRconSession:
         await self.client.close()
 
 
+
 class CommandRequest:
-    def __init__(self, bot: disnake.ext.commands.Bot, message: disnake.Message):
-        self.bot = message
+    def __init__(self, bot, message: disnake.Message, cfg: dict):
+        self.bot = bot
         self.message = message
         self.permission_user_level = 0
-        jsm = JsonManager()
-        jsm.dload_cfg(short_name="em.json")
-        self.cfg = jsm.buffer
+        self.cfg = cfg
 
     async def __send_cmd(self, command: str, session: SmartRconSession) -> str:
         _, response = await session.send_cmd(command)
@@ -76,13 +74,12 @@ class CommandRequest:
                 continue
 
             allowed_cmd += per
-        print(allowed_cmd)
         for cmd in allowed_cmd:
             if cmd == separated_command[0] or cmd == "*":
 
                 return await self.__send_cmd(command, session)
 
-        return "У тебя недостаточно прав, чтобы воспользоваться этой командой"
+        return self.bot.cfg["replics"]["enough_rights"]
 
 
 class RconSession(commands.Cog):
@@ -91,9 +88,13 @@ class RconSession(commands.Cog):
         self.sessions = {}
         self.my_cfg = JsonManager()
         self.my_cfg.dload_cfg("sessions.json")
+        self.jsm = JsonManager()
+        self.jsm.dload_cfg("em.json")
+        self.cfg = self.jsm.buffer
+        self.cfg["sessions"] = self.my_cfg.buffer
 
     async def _restore_sessions(self):
-        session_list = self.my_cfg.buffer.get("session_list")
+        session_list = self.cfg["sessions"].get("session_list")
         if session_list is None:
             return
         for session_card in session_list:
@@ -105,7 +106,9 @@ class RconSession(commands.Cog):
             response_code, response_message = await self.sessions[session_card["channel_id"]].connect()
 
             if response_code:
-                self.bot.log.printf(f"[*\RconSession] cause error( {response_code} ) to connect >>> {session_card['rcon_host']}:{session_card['rcon_port']}")
+                self.bot.log.printf(self.bot.cfg["replics"]["err_connect"].format(
+                    response_code=response_code, rcon_host=session_card['rcon_host'], rcon_port=session_card['rcon_port'])
+                )
 
     async def _save_sessions(self):
         #create session list
@@ -123,10 +126,10 @@ class RconSession(commands.Cog):
 
             session_list.append(session_card)
 
+        sessions = self.cfg["sessions"]
+        sessions["session_list"] = session_list
         self.my_cfg.dwrite_cfg(
-            {
-                "session_list" : session_list
-            }
+            sessions
         )
 
     @commands.slash_command(name="session_start",
@@ -137,23 +140,47 @@ class RconSession(commands.Cog):
                             rcon_port: str = "25575",
                             rcon_password: str = ""
                             ) -> None:
-        category = inter.guild.get_channel(1233522035444027477) # канал для сессий
-        text_ch = await category.create_text_channel(name=f"{rcon_host}_{rcon_port}".replace(".", "_"))
+        category = inter.guild.get_channel(self.cfg["sessions"]["rcon_category"])  # канал для сессий
+        overwrites = {
+            inter.guild.default_role: disnake.PermissionOverwrite(view_channel=False),
+            inter.guild.me: disnake.PermissionOverwrite(view_channel=True, embed_links=True)
+        }
+        text_ch = await category.create_text_channel(name=f"{rcon_host}_{rcon_port}".replace(".", "_"), overwrites=overwrites)
         self.sessions[text_ch.id] = SmartRconSession(rcon_host=rcon_host, rcon_port=rcon_port, rcon_password=rcon_password)
         await self.sessions[text_ch.id].connect()
         await self._save_sessions()
 
-        await inter.response.send_message(f"Запущена сессия {rcon_host}:{rcon_port}")
+        await inter.response.send_message(self.bot.cfg["replics"]["session_start"].format(
+            rcon_host=rcon_host, rcon_port=rcon_port)
+        )
 
     @commands.slash_command(name="session_list",
                             description="Вывести все rcon сессии")
     @commands.default_member_permissions(administrator=True)
     async def session_list(self, inter: ApplicationCommandInteraction):
         msg = ""
-        for key in self.sessions.keys():
-            msg += f"<#{key}>\nhost >>> {self.sessions[key].rcon_host}\nport >>> {self.sessions[key].rcon_port}\npass >>> {self.sessions[key].rcon_password}\n"
+        try:
+            for key in self.sessions.keys():
+                msg += self.bot.cfg["replics"]["list_session_part"].format(
+                    key=key, rcon_host=self.sessions[key].rcon_host, rcon_port=self.sessions[key].rcon_port, rcon_password=self.sessions[key].rcon_password
+                )
+        except Exception:
+            pass
 
-        await inter.response.send_message(msg)
+        await inter.response.send_message(msg if msg else "Нету сессий")
+
+    @commands.slash_command(name="session_reload",
+                            description="Перезагрузить все сессии")
+    @commands.default_member_permissions(administrator=True)
+    async def session_reload(self, inter: ApplicationCommandInteraction):
+        for key in self.sessions.keys():
+            try:
+                await self.sessions[key].close()
+                await self.sessions[key].connect()
+            except Exception as e:
+                print(e)
+
+        await inter.response.send_message(self.bot.cfg["replics"]["session_reload"])
 
     @commands.slash_command(name="session_stop",
                             description="Закрыть rcon сессию")
@@ -163,12 +190,14 @@ class RconSession(commands.Cog):
         try:
             await self.sessions[ch_id].close()
             await inter.guild.get_channel(ch_id).delete()
-            await inter.response.send_message(f"Сессия закрыта {self.sessions[ch_id].rcon_host}:{self.sessions[ch_id].rcon_port}")
+            await inter.response.send_message(self.bot.cfg["replics"]["session_stop"].format(
+                rcon_host=self.sessions[ch_id].rcon_host, rcon_port=self.sessions[ch_id].rcon_port)
+            )
             del self.sessions[ch_id]
             await self._save_sessions()
         except KeyError:
             print(self.sessions, ch_id)
-            await inter.response.send_message(f"Не найдена сессия с айди канала {ch_id}")
+            await inter.response.send_message(self.bot.cfg["replics"]["session_not_found"].format(ch_id=ch_id))
         except Exception as e:
             print(e)
 
@@ -186,9 +215,9 @@ class RconSession(commands.Cog):
         if message.author.bot:
             return
 
-        message_response = await message.channel.send(content="Команда отправлена :white_check_mark:\nЖдите ответа")
+        message_response = await message.channel.send(content=self.bot.cfg["replics"]["wait_response_from_command"])
 
-        cm = CommandRequest(bot=self.bot, message=message)
+        cm = CommandRequest(bot=self.bot, message=message, cfg=self.cfg)
         await cm.set_actual_permission_user_level()
         response = await cm.send_cmd(command=message.content, session=self.sessions[message.channel.id])
         await message_response.edit(response)
