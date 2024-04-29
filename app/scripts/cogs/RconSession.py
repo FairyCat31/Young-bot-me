@@ -18,19 +18,21 @@ class SmartRconSession:
         try:
             await self.client.connect()
         except RCONConnectionError as e:
+            print("==========================================================================Error: 54745")
             print(e)
             return 1, "An error occurred whilst connecting to the server..."
 
         except IncorrectPasswordError as e:
+            print("==========================================================================Error: 92352")
             print(e)
             return 2, "The provided password was incorrect..."
 
         return 0, ""
 
-    async def send_cmd(self, command: str) -> (int, str):
+    async def send_cmd(self, command: str, timeout: int = 2) -> (int, str):
 
         try:
-            response, _ = await self.client.send_cmd(command)
+            response, _ = await self.client.send_cmd(command, timeout=timeout)
         except ClientNotConnectedError:
             return 3, "The client was not connected to the server for some reason?"
 
@@ -38,7 +40,6 @@ class SmartRconSession:
 
     async def close(self) -> None:
         await self.client.close()
-
 
 
 class CommandRequest:
@@ -49,7 +50,12 @@ class CommandRequest:
         self.cfg = cfg
 
     async def __send_cmd(self, command: str, session: SmartRconSession) -> str:
-        _, response = await session.send_cmd(command)
+        try:
+            _, response = await session.send_cmd(command, timeout=10)
+        except Exception as e:
+            print("==========================================================================Error: 79808")
+            print(e)
+            response = "Не удалось выполнить команду/получить респонс\n Попробуй прописать /session_reload"
         return response
 
     async def set_actual_permission_user_level(self) -> None:
@@ -111,10 +117,10 @@ class RconSession(commands.Cog):
                 )
 
     async def _save_sessions(self):
-        #create session list
+        # create session list
         session_list = []
 
-        #save session's data to session_list
+        # save session's data to session_list
         for key_session in self.sessions.keys():
             session_card = {}
             session = self.sessions.get(key_session)
@@ -164,8 +170,9 @@ class RconSession(commands.Cog):
                 msg += self.bot.cfg["replics"]["list_session_part"].format(
                     key=key, rcon_host=self.sessions[key].rcon_host, rcon_port=self.sessions[key].rcon_port, rcon_password=self.sessions[key].rcon_password
                 )
-        except Exception:
-            pass
+        except Exception as e:
+            print("==========================================================================Error: 24235")
+            print(e)
 
         await inter.response.send_message(msg if msg else "Нету сессий")
 
@@ -178,6 +185,7 @@ class RconSession(commands.Cog):
                 await self.sessions[key].close()
                 await self.sessions[key].connect()
             except Exception as e:
+                print("==========================================================================Error: 34534")
                 print(e)
 
         await inter.response.send_message(self.bot.cfg["replics"]["session_reload"])
@@ -199,6 +207,7 @@ class RconSession(commands.Cog):
             print(self.sessions, ch_id)
             await inter.response.send_message(self.bot.cfg["replics"]["session_not_found"].format(ch_id=ch_id))
         except Exception as e:
+            print("==========================================================================Error: 76457")
             print(e)
 
     @commands.Cog.listener(name="on_ready")

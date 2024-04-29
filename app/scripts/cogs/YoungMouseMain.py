@@ -9,7 +9,7 @@ class YoungMouseMain(commands.Cog):
         self.jsm = JsonManager()
         self.jsm.dload_cfg("ym.json")
         bot.cfg["discord_ids"] = self.jsm.buffer
-        self.req_fields = ["setup", "dm_category", "moder_role", "member_role", "player_role", "ver_result_ch", "greeting_ch"]
+        self.req_fields = ["setup", "dm_category", "moder_role", "member_role", "player_role", "ver_result_ch", "greeting_ch", "rcon_velocity_ch"]
 
     def reload(self):
         print("ymm перезагружен")
@@ -20,7 +20,8 @@ class YoungMouseMain(commands.Cog):
     "member_role": "роль участника"
     "player_role": "роль игрока"
     "ver_result_ch": "текст канал вериф резалт"
-    "greeting_ch": "текст канал приветствия"
+    "greeting_ch": "текст канал приветствия",
+    "rcon_velocity_ch": канал с консолью сервера велосити
     """
 
     @commands.slash_command(name="msg",
@@ -105,11 +106,20 @@ class YoungMouseMain(commands.Cog):
         await inter.response.send_message(f"ver result channel id set --> {greeting_ch_id}")
         await self.update_setup_data()
 
-    @commands.slash_command(name="setup_all",
-                            description="Настройка всех параметров бота")
+    @commands.slash_command(name="setup_rcon_velocity_ch",
+                            description="Установить канал c rcon сессией велосити")
     @commands.default_member_permissions(administrator=True)
-    async def multi_setup(self, inter: ApplicationCommandInteraction ):
-        pass
+    async def setup_rcon_velocity_ch(self, inter: ApplicationCommandInteraction,
+                                rcon_velocity_ch: str):
+        self.bot.cfg["discord_ids"]["rcon_velocity_ch"] = int(rcon_velocity_ch)
+        await inter.response.send_message(f"ver result channel id set --> {rcon_velocity_ch}")
+        await self.update_setup_data()
+
+    # @commands.slash_command(name="setup_all",
+    #                         description="Настройка всех параметров бота")
+    # @commands.default_member_permissions(administrator=True)
+    # async def multi_setup(self, inter: ApplicationCommandInteraction ):
+    #     pass
 
 
 def setup(bot: commands.Bot):

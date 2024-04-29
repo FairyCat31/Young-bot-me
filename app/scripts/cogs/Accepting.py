@@ -134,6 +134,15 @@ class Accepting(commands.Cog):
         view = await self.get_view(user_panel_id=self.user_panel_id)
         await self.panel.edit(content="", embed=embed, view=view)
 
+    async def add_to_wl(self, guild: disnake.Guild, nickname: str):
+        velocity_rcon_session_ch_id = self.bot.cfg["discord_ids"].get("rcon_velocity_ch")
+        if velocity_rcon_session_ch_id is None:
+            return
+        velocity_rcon_session_ch = guild.get_channel(velocity_rcon_session_ch_id)
+        if velocity_rcon_session_ch is None:
+            return
+        await velocity_rcon_session_ch.send(content=f"mywl add {nickname}")
+
     async def add_to_db(self, table: str = "AcceptedUsers"):
         self.dbm.connect()
         self.dbm.user_add_2(table=table, ud=self.users[self.user_panel_id], discord_id=self.users[self.user_panel_id]["did"])
@@ -247,6 +256,8 @@ class Accepting(commands.Cog):
         # get role player
         await member.edit(nick=self.users[self.user_panel_id]["login"])
         await member.add_roles(inter.guild.get_role(self.bot.cfg["discord_ids"]["player_role"]))
+        # add to wl
+        await self.add_to_wl(guild=inter.guild, nickname=self.users[self.user_panel_id]["login"])
         # get and send embed with result
         embed = await self.get_accept_embed(inter=inter, member=member)
         await channel.send(content=member.mention, embed=embed)
@@ -310,7 +321,7 @@ class Accepting(commands.Cog):
             return
 
         if inter.user.get_role(self.cfg["discord_ids"].get("moder_role")) is None:
-            await inter.response.send_message(content=self.cfg["replics"]["have_not_enough_rights"], ephemeral=True)
+            await inter.response.send_message(content=self.cfg["replics"]["have_not_enough_rights"].format(user_mention=inter.author.mention), ephemeral=True)
             return
 
         await self.func_dict[inter.component.custom_id](inter=inter)
