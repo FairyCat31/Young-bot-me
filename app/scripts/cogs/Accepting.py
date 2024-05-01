@@ -176,7 +176,13 @@ class Accepting(commands.Cog):
         embed.set_thumbnail(self.bot.get_user(user_data['did']).display_avatar.url)
 
         for i in range(1, len(self.format_keys)):
-            embed.add_field(name=self.fields[self.format_keys[i]], value=user_data[self.format_keys[i]], inline=False)
+            name = self.fields[self.format_keys[i]]
+            value = user_data[self.format_keys[i]]
+
+            if len(value) > 1024:
+                value = value[0:1020] + "..."
+
+            embed.add_field(name=name, value=value, inline=False)
 
         return embed
 

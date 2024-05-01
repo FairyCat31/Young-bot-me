@@ -1,4 +1,17 @@
 {
   "rcon_category": 1233522035444027477,
-  "session_list": []
+  "session_list": [
+    {
+      "channel_id": 1233863561697165412,
+      "rcon_host": "95.217.43.185",
+      "rcon_port": 20707,
+      "rcon_password": "Vw83n5rgrpWE1UL23425kwefvsu"
+    },
+    {
+      "channel_id": 1234095942265868338,
+      "rcon_host": "144.76.113.152",
+      "rcon_port": 20920,
+      "rcon_password": "O32~ztTFMt1ozM7n*FrF%7m~TDAj8OK$"
+    }
+  ]
 }

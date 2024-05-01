@@ -225,7 +225,7 @@ class RconSession(commands.Cog):
             return
 
         message_response = await message.channel.send(content=self.bot.cfg["replics"]["wait_response_from_command"])
-
+        print("я отработала", message.content, message.author.name)
         cm = CommandRequest(bot=self.bot, message=message, cfg=self.cfg)
         await cm.set_actual_permission_user_level()
         response = await cm.send_cmd(command=message.content, session=self.sessions[message.channel.id])
