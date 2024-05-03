@@ -2,7 +2,7 @@
   "tokens" : "data\\sys\\.env",
   "YoungMouse" : {
     "command_prefix": ".",
-    "cogs": ["cogs.Main", "cogs.YoungMouseMain", "cogs.Greetings", "cogs.Registration", "cogs.Accepting"],
+    "cogs": ["cogs.Main", "cogs.YoungMouseMain", "cogs.Greetings", "cogs.Registration"],
     "replics": {
       "start" : "multiline\n> Successful starting\n> I logged as {user}\n> Starting during: {during_time}",
       "reg_modal_response_2": "{user_mention} пройдите вторую часть регистрации",
@@ -207,6 +207,55 @@
             "required": true,
             "custom_id": "reason",
             "style": "short"
+          }
+        ]
+      },
+      "reg_modal": {
+        "title": "Верификация | Часть {part}",
+        "phrase_req_words": "Братик, напиши пожалуйста от {min_words} слов",
+        "questions": [
+          {
+              "question": "как какать",
+              "data_type": "str",
+              "custom_id": "poop",
+              "style": "short",
+              "min_words": 3
+
+          },
+          {
+              "question": "Расскажите о себе",
+              "data_type": "str",
+              "custom_id": "about_me",
+              "style": "long",
+              "min_words": 50
+          },
+          {
+              "question": "Расскажите о себе",
+              "data_type": "str",
+              "custom_id": "about_me",
+              "style": "long",
+              "min_words": 50
+          },
+          {
+              "question": "Расскажите о себе",
+              "data_type": "str",
+              "custom_id": "about_me",
+              "style": "long",
+              "min_words": 50
+          },
+          {
+              "question": "Расскажите о себе",
+              "data_type": "str",
+              "custom_id": "about_me",
+              "style": "long",
+              "min_words": 50
+          },
+          {
+              "question": "Расскажите о себе",
+              "data_type": "str",
+              "custom_id": "about_me",
+              "style": "long",
+              "min_words": 50
           }
         ]
       }
