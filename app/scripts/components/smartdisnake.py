@@ -44,23 +44,31 @@ class SmartModal(Modal):
 class SmartRegModal(Modal):
     def __init__(self, modal_cfg: dict):
         self.modal_cfg = modal_cfg
-        print(modal_cfg)
         super().__init__(
-            title=modal_cfg["title"].format(part=modal_cfg["part"]),
+            title=self.modal_cfg["title"].format(part=int(modal_cfg["part"])),
             # custom_id=modal_cfg["custom_id"],
             components=[
                 TextInput(
                     label=field["question"],
-                    placeholder="-" if field.get("min_words") is None else self.modal_cfg["phrase_req_words"].format(min_words=field["min_words"]),
+                    placeholder=self.__get_placeholder(field),
                     max_length=3999,
                     min_length=0,
                     required=True,
                     custom_id=field["custom_id"],
-                    style=TextInputStyle.long if field["style"] == "long" else TextInputStyle.short
+                    style=TextInputStyle.long if field.get("style") == "long" else TextInputStyle.short
                 ) for field in modal_cfg["fields"]
             ]
 
         )
+
+    def __get_placeholder(self, field: dict) -> str:
+        placeholder = "-"
+        if not field.get("example") is None:
+            return field["example"]
+        if not field.get("min_words") is None:
+            return self.modal_cfg["phrase_req_words"].format(min_words=field["min_words"])
+        return placeholder
+
 
 
 class SmartEmbed(Embed):

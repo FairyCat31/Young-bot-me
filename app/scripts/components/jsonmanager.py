@@ -41,5 +41,4 @@ class JsonManager():
         self.load_cfg(path=self.pjson+short_name)
 
     def dwrite_cfg(self, dictionary: dict, short_name: str = None) -> None:
-
         self.write_cfg(path=self.pjson+(self.name if short_name is None else short_name), dictionary=dictionary)

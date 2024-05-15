@@ -106,14 +106,14 @@ class YoungMouseMain(commands.Cog):
         await inter.response.send_message(f"ver result channel id set --> {greeting_ch_id}")
         await self.update_setup_data()
 
-    @commands.slash_command(name="setup_rcon_velocity_ch",
-                            description="Установить канал c rcon сессией велосити")
-    @commands.default_member_permissions(administrator=True)
-    async def setup_rcon_velocity_ch(self, inter: ApplicationCommandInteraction,
-                                rcon_velocity_ch: str):
-        self.bot.cfg["discord_ids"]["rcon_velocity_ch"] = int(rcon_velocity_ch)
-        await inter.response.send_message(f"ver result channel id set --> {rcon_velocity_ch}")
-        await self.update_setup_data()
+    # @commands.slash_command(name="setup_rcon_velocity_ch",
+    #                         description="Установить канал c rcon сессией велосити")
+    # @commands.default_member_permissions(administrator=True)
+    # async def setup_rcon_velocity_ch(self, inter: ApplicationCommandInteraction,
+    #                             rcon_velocity_ch: str):
+    #     self.bot.cfg["discord_ids"]["rcon_velocity_ch"] = int(rcon_velocity_ch)
+    #     await inter.response.send_message(f"ver result channel id set --> {rcon_velocity_ch}")
+    #     await self.update_setup_data()
 
     # @commands.slash_command(name="setup_all",
     #                         description="Настройка всех параметров бота")

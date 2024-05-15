@@ -23,7 +23,7 @@ class Greeting(commands.Cog):
         return True
 
     @commands.Cog.listener()
-    async def on_member_join(self, member):
+    async def on_member_join(self, member: disnake.Member) -> None:
         res = await self.is_have_ids("greeting_ch")
         if not res:
             return

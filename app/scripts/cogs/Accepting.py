@@ -2,10 +2,11 @@ from disnake.ext import commands
 from disnake.ui import View, Button
 from asyncio import sleep
 import disnake
+from io import BytesIO
 from components.dbmanager import DatabaseManager
 from components.jsonmanager import JsonManager
 from components.smartdisnake import *
-
+from json import dumps
 
 class TestView(View):
     def __init__(self, block_previous_butt: bool = False, block_next_butt: bool = False, block_full: bool = False):
@@ -41,14 +42,14 @@ class Accepting(commands.Cog):
         self.bot = bot
         self.panel = None
         self.user_dimension = {}
+        self.log = bot.log
         self.cfg = bot.cfg
         self.__class__.dio = self.cfg["discord_ids"]
         # self.cfg = JsonManager().buffer[self.bot.name]
         # self.cfg.dload_cfg(short_name="bots_properties.json")
-        self.fields = {}
         self.dbm = DatabaseManager(file_name="registration.db")
-        self.format_keys = ['did', 'login', 'name', 'gender', 'old', 'desc', 'way', 'inter', 'move', 'skill', 'soc']
         self.users = []
+        self.db_fields = ["did"]
         self.user_panel_id = None
         self.func_dict = {
             "previous_user": self.func_previous_user,
@@ -62,9 +63,8 @@ class Accepting(commands.Cog):
 
         }
 
-        for modal_key in self.cfg["modals"].keys():
-            for field in self.cfg["modals"][modal_key]["text_inputs"]:
-                self.fields[field["custom_id"][1:]] = field["label"]
+        for field in self.cfg["modals"]["reg_modal"]["questions"]:
+            self.db_fields.append(field["custom_id"])
 
     def reload(self):
         self.cfg = self.bot.cfg
@@ -97,55 +97,70 @@ class Accepting(commands.Cog):
     async def get_users(self) -> None:
         self.dbm.connect()
 
+        self.users = []
         for user_parse in self.dbm.users_get_id(table="PendingUsers"):
             user = {}
             for par in range(len(user_parse)):
-                user[self.format_keys[par]] = user_parse[par]
+                user[self.db_fields[par]] = user_parse[par]
 
             self.users.append(user)
 
         self.dbm.close()
 
-    async def save_set_user(self, inter: disnake.MessageInteraction, user_panel_id: int = 0):
-        try:
-            var = self.users[user_panel_id]
-            del var
-        except IndexError:
-            try:
-                var = self.users[user_panel_id-1]
-                del var
-            except IndexError:
-                pass
-                embed = await self.get_empty_embed()
-                view = TestView(block_full=True)
-                await self.panel.edit(content="", embed=embed, view=view)
-            else:
-                await self.set_user(inter=inter, user_panel_id=user_panel_id-1)
-        else:
-            await self.set_user(inter=inter, user_panel_id=user_panel_id)
+    # async def save_set_user(self, inter: disnake.MessageInteraction, user_panel_id: int = 0):
+    #     try:
+    #         var = self.users[user_panel_id]
+    #         del var
+    #     except IndexError:
+    #         try:
+    #             var = self.users[user_panel_id-1]
+    #             del var
+    #         except IndexError:
+    #             pass
+    #             embed = await self.get_empty_embed()
+    #             view = TestView(block_full=True)
+    #             await self.panel.edit(content="", embed=embed, view=view)
+    #         else:
+    #             await self.set_user(inter=inter, user_panel_id=user_panel_id-1)
+    #     else:
+    #         await self.set_user(inter=inter, user_panel_id=user_panel_id)
 
     async def set_user(self, inter: disnake.MessageInteraction, user_panel_id: int = 0):
         self.user_panel_id = user_panel_id
-
         if inter.guild.get_member(self.users[self.user_panel_id]["did"]) is None:
-            await self.func_reject(inter=inter, reason="юзер покикул дс сервер")
+            await self.func_reject(inter=inter, reason=self.cfg["replics"]["user_leave_server"])
             return
-        embed = await self.get_embed(moder_name=inter.user.name, moder_avatar=inter.user.display_avatar.url, uid=self.user_panel_id)
+        embed, file = await self.get_embed(moder_name=inter.user.name, moder_avatar=inter.user.display_avatar.url, uid=self.user_panel_id)
         view = await self.get_view(user_panel_id=self.user_panel_id)
-        await self.panel.edit(content="", embed=embed, view=view)
+        await self.panel.edit(attachments=None)
+        await self.panel.edit(content="", embed=embed, files=[] if file is None else [file], view=view)
 
-    async def add_to_wl(self, guild: disnake.Guild, nickname: str):
-        velocity_rcon_session_ch_id = self.bot.cfg["discord_ids"].get("rcon_velocity_ch")
-        if velocity_rcon_session_ch_id is None:
+    async def save_set_user(self, inter: disnake.MessageInteraction, user_panel_id: int = 0):
+        l = len(self.users)
+
+        if not l:
+            embed = await self.get_empty_embed()
+            view = TestView(block_full=True)
+            await self.panel.edit(content="", embed=embed, view=view)
             return
-        velocity_rcon_session_ch = guild.get_channel(velocity_rcon_session_ch_id)
-        if velocity_rcon_session_ch is None:
-            return
-        await velocity_rcon_session_ch.send(content=f"mywl add {nickname}")
+
+        if user_panel_id == l:
+            user_panel_id -= 1
+
+        await self.set_user(inter=inter, user_panel_id=user_panel_id)
+
+    # async def add_to_wl(self, guild: disnake.Guild, nickname: str):
+    #     velocity_rcon_session_ch_id = self.bot.cfg["discord_ids"].get("rcon_velocity_ch")
+    #     if velocity_rcon_session_ch_id is None:
+    #         return
+    #     velocity_rcon_session_ch = guild.get_channel(velocity_rcon_session_ch_id)
+    #     if velocity_rcon_session_ch is None:
+    #         return
+    #     await velocity_rcon_session_ch.send(content=f"mywl add {nickname}")
 
     async def add_to_db(self, table: str = "AcceptedUsers"):
         self.dbm.connect()
-        self.dbm.user_add_2(table=table, ud=self.users[self.user_panel_id], discord_id=self.users[self.user_panel_id]["did"])
+        self.dbm.user_add_2(table=table, ud=self.users[self.user_panel_id])
         self.dbm.commit()
         self.dbm.close()
 
@@ -161,9 +176,22 @@ class Accepting(commands.Cog):
         button_view = TestView(block_previous_butt=user_panel_id == 0, block_next_butt=user_panel_id == len(self.users)-1)
         return button_view
 
-    async def get_embed(self, moder_name: str, moder_avatar: str, uid: int = 0) -> disnake.Embed:
-        user_data = self.users[uid]
+    async def get_file(self, user_data: dict) -> disnake.File:
 
+        file_text = (dumps(user_data, indent=0, ensure_ascii=False)
+                     .replace(",", "\n")
+                     .replace(": ", "\n")
+                     .replace("{", "")
+                     .replace("}", ""))
+
+        output = BytesIO(bytes(file_text, encoding='utf-8'))
+        file = disnake.File(fp=output, filename="user_data.txt")
+
+        return file
+
+    async def get_embed(self, moder_name: str, moder_avatar: str, uid: int = 0) -> (disnake.Embed, disnake.File):
+        user_data = self.users[uid]
+        file = None
         embed = disnake.Embed(
             title='{:-^42}'.format(f"АНКЕТА ИГРОКА {self.bot.get_user(user_data['did']).name.upper()}"),
             description='{:-^60}'.format('{:0>2}'.format(uid+1) + "/" + '{:0>2}'.format(len(self.users))),
@@ -175,16 +203,25 @@ class Accepting(commands.Cog):
         )
         embed.set_thumbnail(self.bot.get_user(user_data['did']).display_avatar.url)
 
-        for i in range(1, len(self.format_keys)):
-            name = self.fields[self.format_keys[i]]
-            value = user_data[self.format_keys[i]]
+        sum_text_size = 0
+        for i in range(1, len(self.db_fields)):
+
+            name = self.cfg["modals"]["reg_modal"]["questions"][i-1]["question"]
+            value = user_data[self.db_fields[i]]
+
+            sum_text_size += len(value)
 
             if len(value) > 1024:
                 value = value[0:1020] + "..."
 
             embed.add_field(name=name, value=value, inline=False)
 
-        return embed
+        if sum_text_size > 5500:
+            embed.clear_fields()
+            embed.add_field(name="большой размер анкеты", value="не удаётся отобразить", inline=False)
+            file = await self.get_file(user_data)
+
+        return embed, file
 
     async def get_accept_embed(self, inter: disnake.MessageInteraction, member: disnake.Member) -> SmartEmbed:
         embed = SmartEmbed(cfg=self.cfg["embeds"]["request_accept"])
@@ -240,9 +277,10 @@ class Accepting(commands.Cog):
             user: disnake.PermissionOverwrite(view_channel=True)
         }
         text_ch = await category.create_text_channel(name=self.cfg["replics"]["dm_ch_name"].format(member_name=user.name), overwrites=overwrites)
-        embed = await self.get_embed(moder_name=inter.user.name, moder_avatar=inter.user.avatar.url, uid=self.user_panel_id)
-        await text_ch.send(content=self.cfg["replics"]["dm_start_message"].format(user_mention=user.mention, moder_mention=inter.user.mention, role_moder=inter.guild.get_role(self.bot.cfg["discord_ids"]["moder_role"]).mention),
+        embed, file = await self.get_embed(moder_name=inter.user.name, moder_avatar=inter.user.avatar.url, uid=self.user_panel_id)
+        await text_ch.send(content=self.cfg["replics"]["dm_start_message"].format(user_mention=user.mention, moder_mention=inter.user.mention),
                            embed=embed,
+                           files=[] if file is None else [file],
                            components=[
                                Button(label="Закрыть дм", style=disnake.ButtonStyle.primary, custom_id="close_dm",  emoji="⏹")
                            ]
@@ -260,11 +298,12 @@ class Accepting(commands.Cog):
         await self.del_from_db()
         await self.add_to_db()
         # get role player
-        await member.edit(nick=self.users[self.user_panel_id]["login"])
+        # await member.edit(nick=self.users[self.user_panel_id]["login"])
         await member.add_roles(inter.guild.get_role(self.bot.cfg["discord_ids"]["player_role"]))
         # add to wl
-        await self.add_to_wl(guild=inter.guild, nickname=self.users[self.user_panel_id]["login"])
+        # await self.add_to_wl(guild=inter.guild, nickname=self.users[self.user_panel_id]["login"])
         # get and send embed with result
+        self.log.printf(f"[*/Accepting] Модератор {inter.user.global_name} принял игрока {member.name}")
         embed = await self.get_accept_embed(inter=inter, member=member)
         await channel.send(content=member.mention, embed=embed)
         # del user from users and go to next user
@@ -277,6 +316,7 @@ class Accepting(commands.Cog):
         await self.del_from_db()
         # get and send embed with result
         embed = await self.get_reject_embed(inter=inter, member=user, reason=reason)
+        self.log.printf(f"[*/Accepting] multiline\nМодератор {inter.user.global_name} отклонил игрока {user.name}\nПричина: {reason}")
         await channel.send(content=f'<@{self.users[self.user_panel_id]["did"]}>', embed=embed)
         # del user and go to next
         del self.users[self.user_panel_id]
@@ -291,13 +331,19 @@ class Accepting(commands.Cog):
         await self.func_reject(inter=inter, reason=reason)
 
     async def func_close_panel(self, inter: disnake.MessageInteraction) -> None:
-        try:
+        if self.panel is None:
             await inter.response.send_message(content=self.cfg["replics"]["close_panel"], ephemeral=True)
-            await self.panel.delete()
-            self.users = []
-            self.user_panel_id = None
-        except Exception as e:
-            print(e)
+            await inter.message.delete()
+            return
+
+        if self.panel.id != inter.message.id:
+            await inter.response.send_message(content=self.cfg["replics"]["close_panel"], ephemeral=True)
+            return
+
+        await inter.response.send_message(content=self.cfg["replics"]["close_panel"], ephemeral=True)
+        await self.panel.delete()
+        self.users = []
+        self.user_panel_id = None
 
     # "commands" methods for class -> Accepting
 
@@ -315,6 +361,7 @@ class Accepting(commands.Cog):
             await inter.response.send_message(content=self.cfg["replics"]["have_not_enough_rights"], ephemeral=True)
             return
 
+        self.log.printf(f"[*/Accepting] Модератор{inter.user.global_name, inter.user.id} открыл панель в канале {inter.channel.name, inter.channel.id}")
         self.user_panel_id = 0
         await self.get_users()
         await inter.response.send_message(content=self.cfg["replics"]["open_panel"], delete_after=3)
