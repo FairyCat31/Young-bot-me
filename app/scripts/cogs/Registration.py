@@ -234,7 +234,7 @@ class Registration(commands.Cog):
     async def on_button_click(self, inter: MessageInteraction):
         res = await self.is_have_ids("ver_result_ch")
         if not res:
-            inter.response.defer()
+            await inter.response.defer()
             return
 
         if inter.component.custom_id not in ["reg_button"]:

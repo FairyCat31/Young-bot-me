@@ -370,6 +370,12 @@ class Accepting(commands.Cog):
 
     @commands.Cog.listener(name="on_button_click")
     async def when_button_click(self, inter: disnake.MessageInteraction):
+        requirements = "dm_category", "moder_role", "member_role", "player_role", "ver_result_ch"
+        res = await self.is_have_ids(requirements)
+        if not res:
+            await inter.response.send_message(content=f"Бот не настроен\nЗаполните вот эти параметры:\n{requirements}")
+            return
+
         if inter.component.custom_id not in ["previous_user", "next_user", "open_dm", "close_dm", "close_panel", "accept", "reject", "reject_reason"]:
             return
 
