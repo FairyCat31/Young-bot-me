@@ -1,6 +1,8 @@
 import disnake
 from disnake.ext import commands
 from time import time
+
+from disnake.ext.commands import Context, errors
 from dotenv import dotenv_values
 from components.jsonmanager import JsonManager
 from components.logger import Logger
@@ -22,6 +24,9 @@ class MEBot(commands.Bot):
 
         self.log.printf(self.cfg["replics"]["start"].format(user=self.user, during_time=end_time-self.start_time))
 
+    async def on_command_error(self, context: Context, exception: errors.CommandError) -> None:
+        self.log.printf("[&] Ignoring command -> %s" % context.message.content, log_text=False)
+
 
 class BotManager():
     def __init__(self):
@@ -34,11 +39,10 @@ class BotManager():
 
     def init_assistant(func):
         def wrapper(self, name_bot):
-            func(self,
-                name_bot=name_bot,
-                command_prefix=self.cfg.buffer[name_bot]["command_prefix"])
+            func(self, name_bot=name_bot, command_prefix=self.cfg.buffer[name_bot]["command_prefix"])
 
         return wrapper
+
 
     @init_assistant
     def init_bot(self, name_bot, **kwargs):

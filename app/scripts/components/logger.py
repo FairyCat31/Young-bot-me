@@ -43,11 +43,12 @@ class Logger:
         with open(self.file_path, "a", encoding="utf-8") as file:
             file.write((f"{get_str_datetime(_time_format)} {line}" if add_date else line) + "\n")
 
-    def printf(self, line: str):
+    def printf(self, line: str, log_text=True):
         f_line = f"{get_str_datetime(_simple_time_format)} {line}"
         f_line_for_file = f"{get_str_datetime(_time_format)} {line}"
         print(f_line)
-        self.add_note(line=f_line_for_file, add_date=False)
+        if log_text:
+            self.add_note(line=f_line_for_file, add_date=False)
 
     def get_log(self) -> str:
         with open(self.file_path, "r", encoding="utf-8") as file:
