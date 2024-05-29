@@ -143,7 +143,7 @@ class Registration(commands.Cog):
             min_words = user_data[key]['min_words']
 
             if not await asyncio.wait_for(data_type_func[data_type](value=value), timeout=10):
-                return False, f"Вы неверно указали данные({value}) в поле {value}"
+                return False, f"Вы неверно указали данные({value}) в поле {key}"
 
             len_text = len(value.split(" "))
             if len_text < min_words:
