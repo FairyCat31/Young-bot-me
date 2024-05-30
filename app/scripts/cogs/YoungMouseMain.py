@@ -9,7 +9,7 @@ class YoungMouseMain(commands.Cog):
         self.jsm = JsonManager()
         self.jsm.dload_cfg("ym.json")
         bot.cfg["discord_ids"] = self.jsm.buffer
-        self.req_fields = ["setup", "dm_category", "moder_role", "member_role", "player_role", "ver_result_ch", "greeting_ch", "rcon_velocity_ch"]
+        self.req_fields = ["setup", "dm_category", "moder_role", "member_role", "player_role", "ver_result_ch", "greeting_ch"]
 
     def reload(self):
         print("ymm перезагружен")

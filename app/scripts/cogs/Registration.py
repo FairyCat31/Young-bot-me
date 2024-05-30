@@ -1,11 +1,8 @@
 import asyncio
-from datetime import datetime
-from disnake import Embed, ModalInteraction, MessageInteraction, CommandInter, ButtonStyle
+from disnake import Embed, ModalInteraction, MessageInteraction, CommandInter, ButtonStyle, Member, Colour
 from disnake.ext import commands
-from disnake.ui import Modal, TextInput, Button
-# from components.jsonmanager import JsonManager
+from disnake.ui import Button
 from components.dbmanager import DatabaseManager
-from disnake import TextInputStyle as tis
 from asyncio import sleep
 from components.smartdisnake import *
 
@@ -91,6 +88,22 @@ class Registration(commands.Cog):
             modals.append(modal)
 
         return modals
+
+    async def get_reject_embed(self, member: Member, reason: str) -> Embed:
+        embed = SmartEmbed(cfg=self.cfg["embeds"]["request_reject"])
+        embed.title = embed.title.format(user_name=member.name).upper()
+        embed.color = Colour.brand_red()
+
+        embed.add_field(name=self.cfg["embeds"]["request_reject"]["other"]["field"]["name"],
+                        value=self.cfg["embeds"]["request_reject"]["other"]["field"]["value"].format(reason=reason),
+                        inline=self.cfg["embeds"]["request_reject"]["other"]["field"]["inline"])
+
+        embed.set_footer(
+            text=self.cfg["embeds"]["request_accept"]["other"]["footer_text"].format(moder_name=self.bot.user.name),
+            icon_url=self.bot.user.avatar.url,
+        )
+
+        return embed
 
     async def is_have_ids(self, *args):
 
@@ -205,7 +218,9 @@ class Registration(commands.Cog):
         if not is_accept:
             del self.user_responses[inter.user.id]
             self.log.printf(f"[*/Registration] участник({inter.user.global_name}) не пропущен\n{reason}")
-            await inter.channel.send(content=reason)
+            embed = await self.get_reject_embed(inter.user, reason)
+            channel = inter.guild.get_channel(self.bot.cfg["discord_ids"]["ver_result_ch"])
+            await channel.send(content=inter.user.mention, embed=embed)
             return
 
         self.log.printf(f"[*/Registration] игрок({inter.user.global_name}) подал заявку")
