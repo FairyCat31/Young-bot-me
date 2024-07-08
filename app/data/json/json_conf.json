@@ -1,3 +1,5 @@
 {
-  "pjson": "data/json/"
+  "path_to_json_files": "data/json/",
+  "indent": 2,
+  "encoding": "utf-8"
 }
