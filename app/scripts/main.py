@@ -1,5 +1,8 @@
-from bot_manager import BotManager
+import os
+import sys
 import argparse
+sys.path.insert(1, os.path.join(sys.path[0].replace("/app/scripts", "")))
+import bot_manager
 
 
 __all__ = [
@@ -80,11 +83,17 @@ class Main:
         # convert object field to dict
         parsed_args = vars(self.args)
         # init bot manager and init bot with args
-        bman = BotManager()
+        bman = bot_manager.BotManager()
         bman.init_bot(**parsed_args)
+        bman.run_bot()
         return 0
 
 
 if __name__ == "__main__":
     m = Main()
     m.main()
+#     l = Logger("Test Module")
+#     l.printf("Hello world!!!")
+#     l.printf("simple warn -_-", type_message=TypeLogText.WARN)
+#     l.printf("very critical error", type_message=TypeLogText.ERROR)
+#     l.printf("some annoy warn", type_message=TypeLogText.WARN, log_text_in_file=False)

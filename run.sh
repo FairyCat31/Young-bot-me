@@ -1,7 +1,6 @@
 #!/bin/bash
 
 source env/bin/activate
-cd app/
-python3 scripts/main.py -name YoungMouse
+python3 app/scripts/main.py -name YoungMouse
 
 read -p "Press any key..."
