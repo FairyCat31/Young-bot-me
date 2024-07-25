@@ -1,5 +1,8 @@
 {
+  "version": "0.2a",
   "path_to_json_files": "app/data/json/",
+  "path_to_crptjson_files": "app/data/json/.crptjson/",
   "indent": 2,
-  "encoding": "utf-8"
+  "encoding": "utf-8",
+  "env_with_crypt_key": "app/data/sys/.env"
 }
