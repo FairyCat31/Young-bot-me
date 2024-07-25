@@ -18,8 +18,10 @@ l.printf('some annoying and popular warn', type_message=TypeLogText., log_text_i
 """
 
 
-# helpful class for set log suffix in func printf
-class TypeLogText:
+class LogType:
+    """
+    helpful class for set log suffix in func printf
+    """
     INFO = 0
     WARN = 1
     ERROR = 2
@@ -29,8 +31,8 @@ class TypeLogText:
 class Logger:
     def __init__(self, module_prefix: str):
         # get conf to logger
-        jsm = JsonManager(type_address=AddressType.FILE, file_name_or_path="logger_conf.json")
-        jsm.load_cfg()
+        jsm = JsonManager(address_type=AddressType.FILE, file_name_or_path="logger_conf.json")
+        jsm.load_from_file()
         self.logger_conf = jsm.get_buffer()
         # init class data, prefix
         self.module_prefix = module_prefix
@@ -60,16 +62,16 @@ class Logger:
             file.write(line)
 
     # print info
-    def printf(self, line: str, type_message: int = 0, log_text_in_file: bool = True):
+    def printf(self, line: str, log_type: int = 0, log_text_in_file: bool = True):
         # generate timestamp, prefix and suffix
         now_int_time = datetime.now()
         now_date = self.__get_str_datetime(now_int_time, self.logger_conf["date_format"])
         now_time = self.__get_str_datetime(now_int_time, self.logger_conf["time_format"])
-        suffix = self.suffixes[type_message]
+        suffix = self.suffixes[log_type]
         # generate color text
         f_line = (f"{Style.BRIGHT}[{Fore.CYAN}{now_time}{Fore.RESET}]{Style.RESET_ALL} " +
                   f"{Style.BRIGHT}[{Fore.GREEN}{self.module_prefix}{Fore.RESET}]{Style.RESET_ALL} " +
-                  f"{Style.BRIGHT}[{self.color_suffixes[type_message]}{suffix}{Fore.RESET}]{Style.RESET_ALL} "
+                  f"{Style.BRIGHT}[{self.color_suffixes[log_type]}{suffix}{Fore.RESET}]{Style.RESET_ALL} "
                   f"{Style.BRIGHT}{line}")
 
         print(f_line)
