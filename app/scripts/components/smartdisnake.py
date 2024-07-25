@@ -2,7 +2,7 @@ from disnake.ui import Modal, TextInput
 from disnake.ext import commands
 from disnake import Embed, TextInputStyle
 from time import time
-from app.scripts.components.logger import Logger, TypeLogText
+from app.scripts.components.logger import Logger, LogType
 from app.scripts.components.jsonmanager import JsonManagerForBots, AddressType
 
 
@@ -12,24 +12,25 @@ class MEBot(commands.Bot):
         self.start_time = time()
         super().__init__(*args, **kwargs)
         self.name = name
+        self.is_r = False
         self.json_manager = JsonManagerForBots(bot_name=name,
-                                               type_address=AddressType.FILE,
+                                               address_type=AddressType.FILE,
                                                file_name_or_path="bots_properties.json")
-        self.json_manager.load_cfg()
+        self.json_manager.load_from_file()
         self.log = Logger(module_prefix=name)
 
     def __repr__(self):
         return self.name
 
     async def on_ready(self):
+        self.is_r = True
         end_time = time()
-        delta_time = end_time-self.start_time
-        print(self.is_ready())
+        delta_time = end_time - self.start_time
         self.log.printf(self.json_manager.bot_phrases["start"].format(user=self.user, during_time=delta_time))
 
     async def on_command_error(self, context: commands.Context, exception: commands.errors.CommandError) -> None:
         self.log.printf("Ignoring command -> %s" % context.message.content,
-                        type_message=TypeLogText.WARN, log_text_in_file=False)
+                        log_type=LogType.WARN, log_text_in_file=False)
 
 
 class SmartModal(Modal):

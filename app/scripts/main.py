@@ -1,5 +1,6 @@
-import os
 import sys
+import os
+from json import loads
 import argparse
 sys.path.insert(1, os.path.join(sys.path[0].replace("/app/scripts", "")))
 import bot_manager
@@ -20,6 +21,27 @@ class ArgumentParser(argparse.ArgumentParser):
 
         self.exit(2, '%s\n\n\nERROR: %s\n' % (self.description, message))
 
+    def parse_args(self, *args, **kwargs):
+        dict_args = vars(super().parse_args(*args, **kwargs))
+
+        all_keys = tuple(dict_args.keys())
+
+        for key in all_keys:
+
+            if dict_args[key] is None:
+                del dict_args[key]
+                continue
+
+            if type(dict_args[key]) is not str:
+                continue
+
+            first_symbol = dict_args[key][0]
+            if first_symbol == "{" or first_symbol == "[":
+                dict_args[key] = loads(dict_args[key])
+                continue
+
+        return dict_args
+
 
 class Main:
     def __init__(self):
@@ -29,6 +51,7 @@ class Main:
         ]
         # list of all opt keys for program
         self.optional_keys = [
+            ("activity", "{'name': 'unimice.ru', 'type': 'game'}")
         ]
         self.desc = self.__init_description()
         # create parser
@@ -38,7 +61,7 @@ class Main:
 
     def __init_description(self) -> str:
         # Creating description, which print user, if user\'ll make mistake in setting keys
-        description = "\nmain.py "
+        description = "\ndbmanager.py "
         # generate str and plus with desc
         # format: -name <name:str> -old <12:int>
         description += " ".join(["-%s <%s:%s>" % (k, e, type(e)) for k, e in self.required_keys])
@@ -81,10 +104,11 @@ class Main:
 
     def main(self) -> int:
         # convert object field to dict
-        parsed_args = vars(self.args)
+        print("\n\n\\|/ Bot constructor 0.3 alpha \\|/\n\n+ start of list args\n|\n|- " +
+              "\n|- ".join(f"{key}={value}" for key, value in self.args.items()) + "\n|\n+ end of list args\n")
         # init bot manager and init bot with args
         bman = bot_manager.BotManager()
-        bman.init_bot(**parsed_args)
+        bman.init_bot(**self.args)
         bman.run_bot()
         return 0
 
@@ -92,8 +116,3 @@ class Main:
 if __name__ == "__main__":
     m = Main()
     m.main()
-#     l = Logger("Test Module")
-#     l.printf("Hello world!!!")
-#     l.printf("simple warn -_-", type_message=TypeLogText.WARN)
-#     l.printf("very critical error", type_message=TypeLogText.ERROR)
-#     l.printf("some annoy warn", type_message=TypeLogText.WARN, log_text_in_file=False)
