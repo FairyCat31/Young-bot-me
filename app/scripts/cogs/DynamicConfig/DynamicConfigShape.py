@@ -1,5 +1,5 @@
 from typing import Any
-from app.scripts.components.logger import TypeLogText
+from app.scripts.components.logger import LogType
 from disnake.ext import commands
 from disnake.abc import Snowflake
 from disnake import ApplicationCommandInteraction, User, Role, TextChannel
@@ -45,15 +45,11 @@ class ValueConvertorFromUser:
 
 
 class DynamicConfigShape(commands.Cog):
-    # choices = list(self.dynamic_json.get_buffer().keys())
-    # parameter_obj = commands.Param(choices=choices, description="Параметр, значение которого хотите изменить")
-    # value_obj = commands.Param(description="Новое значение параметра")
-
     def __init__(self, bot: MEBot):
         self.bot = bot
         file_name = bot.json_manager.get_bot_properties()["dynamic_config_file_name"]
-        self.dynamic_json = JsonManager(type_address=AddressType.FILE, file_name_or_path=file_name)
-        self.dynamic_json.load_cfg()
+        self.dynamic_json = JsonManager(address_type=AddressType.FILE, file_name_or_path=file_name)
+        self.dynamic_json.load_from_file()
         self.__update_dynamic_config__()
 
     """
@@ -92,15 +88,14 @@ class DynamicConfigShape(commands.Cog):
         if convert_value is None:
             await inter.response.send_message(
                 f"Ошибка обновления параметра.\nНеудалось преобразовать {value} в {data_type_need}")
-            self.bot.log.printf("IncorrectTypeParameter: Failed to update parameter value",
-                                type_message=TypeLogText.WARN)
+            self.bot.log.printf("IncorrectTypeParameter: Failed to update parameter value", log_type=LogType.WARN)
             return
         # if all ok we get response what all ok
         await inter.response.send_message("всё ок")
 
         dyn_buffer[parameter]["value"] = convert_value
         self.dynamic_json.set_buffer(dyn_buffer)
-        self.dynamic_json.write_cfg()
+        self.dynamic_json.write_in_file()
         # update new config in bot json_manager
         self.__update_dynamic_config__()
         # log what all ok

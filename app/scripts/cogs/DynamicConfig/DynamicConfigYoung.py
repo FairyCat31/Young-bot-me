@@ -7,7 +7,7 @@ from app.scripts.components.jsonmanager import JsonManager, AddressType
 
 CONFIG_FILE_NAME = "ym.json"
 config_file = JsonManager(AddressType.FILE, CONFIG_FILE_NAME)
-config_file.load_cfg()
+config_file.load_from_file()
 CHOICES_FROM_FILE = list(config_file.get_buffer().keys())
 
 
