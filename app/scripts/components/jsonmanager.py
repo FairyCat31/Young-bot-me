@@ -1,5 +1,5 @@
 from json import dump, load, loads, dumps
-from typing import Any
+from typing import Any, Union, List
 from os.path import exists
 from app.scripts.components.crypter import CrypterDict
 from dotenv import dotenv_values
@@ -44,6 +44,54 @@ class JsonManager:
     def __str__(self):
         return dumps(self._buffer)
 
+    def __getitem__(self, item) -> Union[str, int, dict, list, None]:
+        # create vars
+        item = str(item)
+        object_output = self._buffer
+        # get separator for pars items and path
+        path_items = self.__path_items(item)
+        # getting need element
+        for path_item in path_items:
+            object_output = object_output.get(path_item)
+
+        return object_output
+
+    def __setitem__(self, key, value):
+        # create vars
+        key = str(key)
+        path_items = self.__path_items(key)
+        len_items = len(path_items) - 1
+        buffer = self._buffer
+        # getting needed sector of dict
+        for i, k in enumerate(path_items):
+            if i == len_items:
+                buffer[k] = value
+                break
+            # create empty dict if address is empty
+            if buffer.get(k) is None:
+                buffer[k] = {}
+
+            buffer = buffer[k]
+
+    def __path_items(self, line: str) -> List[str]:
+        is_need_break = True
+        separator = self.json_config["def_separator"]
+        if line[0] == "%":
+            i = 0
+            separator = ""
+            for s in line:
+                i += 1
+                if s == "%":
+                    is_need_break = not is_need_break
+                else:
+                    separator += s
+
+                if is_need_break:
+                    break
+            line = line[i:]
+        path_items = line.split(separator)
+        return path_items
+
     # write all data from file to buffer
     def load_from_file(self) -> None:
         with open(self._path, "r", encoding=self.json_config["encoding"]) as f:
@@ -66,8 +114,7 @@ class JsonManager:
 class JsonManagerWithCrypt(JsonManager):
     def __init__(self, address_type: str,
                  file_name_or_path: str,
-                 crypt_key: bytes = None,
-                 *args, **kwargs):
+                 crypt_key: bytes = None):
         """
         Manager for working json files with crypt technologies
 

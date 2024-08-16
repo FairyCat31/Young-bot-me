@@ -4,5 +4,6 @@
   "path_to_crptjson_files": "app/data/json/.crptjson/",
   "indent": 2,
   "encoding": "utf-8",
+  "def_separator": "/",
   "env_with_crypt_key": "app/data/sys/.env"
 }
