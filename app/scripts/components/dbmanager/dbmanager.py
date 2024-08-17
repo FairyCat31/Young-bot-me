@@ -59,9 +59,9 @@ class DBManager:
         """
         Decorator for func, which work with db
         """
-        def wrapper(self):
+        def wrapper(self, *args, **kwargs):
             with self.engine.connect() as conn:
-                func(self, conn)
+                func(self, conn, *args, **kwargs)
 
         return wrapper
 
