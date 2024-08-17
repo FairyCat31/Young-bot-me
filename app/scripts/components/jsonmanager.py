@@ -142,31 +142,3 @@ class JsonManagerWithCrypt(JsonManager):
         with open(self._path, "rb") as f:
             encrypt_dict_as_bytes = f.read()
             self._buffer = self._crypter.dict_decrypt(encrypt_dict_as_bytes)
-
-
-class JsonManagerForBots(JsonManager):
-    def __init__(self, bot_name, address_type: str, file_name_or_path: str):
-        super().__init__(address_type, file_name_or_path)
-        self.bot_name = bot_name
-        self.bot_phrases = {}
-        self.bot_buttons = {}
-        self.bot_embeds = {}
-        self.bot_modals = {}
-
-    # get only data for
-    def get_bot_properties(self) -> dict[str, Any]:
-        return self._buffer[self.bot_name].copy()
-
-    def set_bot_properties(self, bot_properties: dict[str, Any]) -> None:
-        self._buffer[self.bot_name] = bot_properties.copy()
-
-    """
-    edit load func for filling field for fast interaction
-    """
-    def load_from_file(self) -> None:
-        super().load_from_file()
-        bot_props = self.get_bot_properties()
-        self.bot_phrases = bot_props["phrases"]
-        self.bot_buttons = bot_props["buttons"]
-        self.bot_embeds = bot_props["embeds"]
-        self.bot_modals = bot_props["modals"]

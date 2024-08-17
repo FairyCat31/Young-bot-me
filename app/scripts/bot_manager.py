@@ -9,7 +9,7 @@ from components.smartdisnake import MEBot
 
 class BotManager:
     def __init__(self):
-        self.json_manager = JsonManager(AddressType.FILE, "bots_properties.json")
+        self.json_manager = JsonManager(AddressType.FILE, "bot_properties.json")
         self.json_manager.load_from_file()
         self.log = Logger(module_prefix="Bot Manager")
         self.env_val = dotenv_values("app/data/sys/.env")
@@ -36,19 +36,6 @@ class BotManager:
         activity = disnake.Activity(**args)
         return activity
 
-    @staticmethod
-    def init_assistant(func):
-        def wrapper(self, name_bot, **kwargs):
-            buffer_bot_json = self.json_manager.get_buffer().get(name_bot)
-            if not buffer_bot_json:
-                self.log.printf(f"Can't find configuration parameters for bot \"{name_bot}\"", log_type=LogType.ERROR)
-                exit(1)
-            command_prefix = self.json_manager.get_buffer()[name_bot]["command_prefix"]
-            func(self, name_bot=name_bot, command_prefix=command_prefix, **kwargs)
-
-        return wrapper
-
-    @init_assistant
     def init_bot(self, name_bot, **kwargs):
         for key in kwargs.keys():
             convert_func = self.optional_prepare_func_map.get(key)
@@ -56,12 +43,12 @@ class BotManager:
                 continue
 
             kwargs[key] = convert_func(kwargs[key])
-
+        command_prefix = self.json_manager["command_prefix"]
         self.log.printf(f"Start to initialize a bot \"{name_bot}\"")
         intents = disnake.Intents.all()
-        self.bot = MEBot(name=name_bot, intents=intents, **kwargs)
+        self.bot = MEBot(name=name_bot, intents=intents, command_prefix=command_prefix, **kwargs)
 
-        for cog in self.json_manager.get_buffer()[name_bot]["cogs"]:
+        for cog in self.json_manager["cogs"]:
             self.log.printf(f"Import \"{cog}\" to bot \"{name_bot}\"")
             self.bot.load_extension(cog)
 
