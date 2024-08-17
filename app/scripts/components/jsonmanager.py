@@ -47,7 +47,7 @@ class JsonManager:
     def __getitem__(self, item) -> Union[str, int, dict, list, None]:
         # create vars
         item = str(item)
-        object_output = self._buffer
+        object_output = self._buffer.copy()
         # get separator for pars items and path
         path_items = self.__path_items(item)
         # getting need element
@@ -68,8 +68,7 @@ class JsonManager:
                 buffer[k] = value
                 break
             # create empty dict if address is empty
-            if buffer.get(k) is None:
-                buffer[k] = {}
+            buffer.setdefault(k, {})
 
             buffer = buffer[k]
 
@@ -104,11 +103,11 @@ class JsonManager:
 
     # get all content from buffer
     def get_buffer(self) -> dict[str, Any]:
-        return self._buffer
+        return self._buffer.copy()
 
     # set content to buffer
     def set_buffer(self, dictionary: dict) -> None:
-        self._buffer = dictionary
+        self._buffer = dictionary.copy()
 
 
 class JsonManagerWithCrypt(JsonManager):
@@ -156,10 +155,10 @@ class JsonManagerForBots(JsonManager):
 
     # get only data for
     def get_bot_properties(self) -> dict[str, Any]:
-        return self._buffer[self.bot_name]
+        return self._buffer[self.bot_name].copy()
 
     def set_bot_properties(self, bot_properties: dict[str, Any]) -> None:
-        self._buffer[self.bot_name] = bot_properties
+        self._buffer[self.bot_name] = bot_properties.copy()
 
     """
     edit load func for filling field for fast interaction
