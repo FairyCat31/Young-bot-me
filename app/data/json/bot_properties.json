@@ -1,7 +1,8 @@
 {
   "command_prefix": ".",
   "dynamic_config_file_name": "ym.json",
-  "cogs": ["cogs.Main", "cogs.DynamicConfig.DynamicConfig"],
+  "cogs": ["cogs.Main", "cogs.DynamicConfig.DynamicConfig", "cogs.Greetings"],
+  "genders": ["м", "ж", "д", "М", "Ж", "Д"],
   "phrases": {
     "start" : "multiline\n> Successful starting\n> I logged as {user}\n> Starting during: {during_time}",
     "reg_command_response": "Если хочешь получить роль игрока и попасть на сервер - просто тыкни на кнопку снизу и заполни небольшую анкету!",
@@ -33,7 +34,6 @@
 
     ]
   },
-  "genders": ["м", "ж", "д", "М", "Ж", "Д"],
   "buttons": {
     "greeting_button_group": {
       "greeting_link_unimice": {

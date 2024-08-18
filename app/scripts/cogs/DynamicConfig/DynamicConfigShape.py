@@ -1,7 +1,6 @@
 from typing import Any
 from app.scripts.components.logger import LogType
 from disnake.ext import commands
-from disnake.abc import Snowflake
 from disnake import ApplicationCommandInteraction
 from app.scripts.components.jsonmanager import JsonManager, AddressType
 from app.scripts.components.smartdisnake import MEBot
@@ -47,7 +46,7 @@ class ValueConvertorFromUser:
 class DynamicConfigShape(commands.Cog):
     def __init__(self, bot: MEBot):
         self.bot = bot
-        file_name = bot.json_manager.get_bot_properties()["dynamic_config_file_name"]
+        file_name = bot.props["dynamic_config_file_name"]
         self.dynamic_json = JsonManager(address_type=AddressType.FILE, file_name_or_path=file_name)
         self.dynamic_json.load_from_file()
         self.__update_dynamic_config__()
@@ -66,13 +65,11 @@ class DynamicConfigShape(commands.Cog):
         dynamic_config = {}
         for key in dyn_buffer.keys():
             dynamic_config[key] = dyn_buffer[key]["value"]
-        return dynamic_config
+        return dynamic_config.copy()
 
     # update parameter "dynamic_config" in bot's buffer of json_manager
     def __update_dynamic_config__(self) -> None:
-        new_bot_properties = self.bot.json_manager.get_bot_properties()
-        new_bot_properties["dynamic_config"] = self.__get_dynamic_config__()
-        self.bot.json_manager.set_bot_properties(new_bot_properties)
+        self.bot.props["dynamic_config"] = self.__get_dynamic_config__()
         self.dynamic_json.write_in_file()
 
     @commands.slash_command(description="Задать новое значение параметру", name="config_setup")
@@ -102,7 +99,7 @@ class DynamicConfigShape(commands.Cog):
     @commands.slash_command(description="Показать текущие настройки")
     @commands.default_member_permissions(administrator=True)
     async def config_show(self, inter: ApplicationCommandInteraction):
-        sett = self.bot.json_manager.get_bot_properties()["dynamic_config"]
+        sett = self.bot.props["dynamic_config"]
         message = ""
         for key, value in sett.items():
             message += f"\n{key} ---> {value}"
