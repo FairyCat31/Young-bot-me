@@ -5,9 +5,6 @@ class Main(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    def reload(self):
-        print("main перезагружен")
-
     @commands.slash_command(name="ping",
                             description="Проверка респонса от бота")
     @commands.default_member_permissions(administrator=True)
@@ -19,6 +16,3 @@ class Main(commands.Cog):
 
 def setup(bot: commands.Bot):
     bot.add_cog(Main(bot))
-
-
-
