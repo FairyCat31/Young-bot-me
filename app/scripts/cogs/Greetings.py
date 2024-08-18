@@ -1,43 +1,57 @@
-import disnake
+from app.scripts.cogs.DynamicConfig import DynamicConfigHelper
+from app.scripts.components.smartdisnake import MEBot
+from app.scripts.components.logger import LogType
+from disnake import Member, CommandInteraction, Embed
+from disnake.ui import Button, View
 from disnake.ext import commands
 from random import randint
 
 
+class GreetingView(View):
+    def __init__(self, buttons_group: dict, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for button_parameters in buttons_group.values():
+            self.add_item(Button(**button_parameters))
+
+
 class Greeting(commands.Cog):
-    def __init__(self, bot):
+    def __init__(self, bot: MEBot):
         self.bot = bot
-
-    def reload(self):
-        print("greeting перезагружен")
-
-    # def is_setup_id(*ids):
-    #     # ids = list(*ids)
-
-    async def is_have_ids(self, *args):
-
-        for key_discord_el in args:
-            if self.bot.cfg["discord_ids"].get(key_discord_el) is None:
-                self.bot.log.printf(f"[*/Greetings] отмена выполнения ~ {key_discord_el}")
-                return False
-
-        return True
+        self.msg_id = None
+        self.view = None
 
     @commands.Cog.listener()
-    async def on_member_join(self, member: disnake.Member) -> None:
-        res = await self.is_have_ids("greeting_ch")
-        if not res:
+    async def on_ready(self):
+        self.view = GreetingView(buttons_group=self.bot.props["buttons/greeting_button_group"])
+
+    @commands.Cog.listener(name="on_member_join")
+    async def on_member_join(self, member: Member) -> None:
+        await member.edit(nick=member.name)  # edit user nick to his id
+        res = DynamicConfigHelper.is_cfg_setup(self.bot.props["dynamic_config"],
+                                               "dm_greetings", "greeting_channel")
+        if res:
+            self.bot.log.printf(f"Parameter {res} is None", LogType.WARN)
             return
 
-        greeting_replics = self.bot.cfg["replics"]["greetings"]  # get all replics
-        greeting_random_replic = greeting_replics[randint(0, len(greeting_replics)-1)]  # random choose one
-        greeting_random_replic = greeting_random_replic.format(user_mention=member.mention) # format replic (change {user_mention} on real mention)
-        greeting_end_replic = self.bot.cfg["replics"]["greeting_info"]  # getting static info replic
-        greeting_replic = f"{greeting_random_replic}\n\n{greeting_end_replic}"
-        greeting_channel = self.bot.get_channel(self.bot.cfg["discord_ids"]["greeting_ch"])  # get greeting channel
+        # generate random first part of phrase
+        greeting_phrases = self.bot.props["phrases/greetings"]
+        greeting_random_phrase = greeting_phrases[randint(0, len(greeting_phrases)-1)]
+        greeting_random_phrase = greeting_random_phrase.format(user_mention=member.mention)
+        # split first dynamic phrase with second static phrase
+        greeting_end_phrase = self.bot.props["phrases/greeting_info"]
+        greeting_phrase = f"{greeting_random_phrase}\n\n{greeting_end_phrase}"
+        # open dm with user and send phrase to him if this func enabled
+        if self.bot.props["dynamic_config/dm_greetings"]:
+            await member.create_dm()
+            await member.dm_channel.send(greeting_phrase)
 
-        await greeting_channel.send(content=greeting_replic)  # send replic to chat
-        await member.edit(nick=member.name)  # edit user nick to his id
+        # get chat id and check chat_id != 0
+        chat_id = self.bot.props["dynamic_config/greeting_channel"]
+        if chat_id:
+            # get greeting channel
+            greeting_channel = self.bot.get_channel(chat_id)
+            await greeting_channel.send(greeting_phrase)  # send phrase to chat
 
 
-def setup(bot: commands.Bot):
+def setup(bot: MEBot):
     bot.add_cog(Greeting(bot))

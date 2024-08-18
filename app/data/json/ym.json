@@ -1,32 +1,10 @@
 {
-  "dm_category": {
-    "desc": "",
-    "type": "DC_OBJ",
-    "value": null
+  "dm_greetings": {
+    "type": "BOOL",
+    "value": true
   },
-  "moder_role": {
-    "desc": "",
+  "greeting_channel": {
     "type": "DC_OBJ",
-    "value": null
-  },
-  "member_role": {
-    "desc": "",
-    "type": "DC_OBJ",
-    "value": null
-  },
-  "player_role": {
-    "desc": "",
-    "type": "DC_OBJ",
-    "value": null
-  },
-  "ver_result_ch": {
-    "desc": "",
-    "type": "DC_OBJ",
-    "value": null
-  },
-  "greeting_ch": {
-    "desc": "",
-    "type": "DC_OBJ",
-    "value": null
+    "value": 0
   }
 }
