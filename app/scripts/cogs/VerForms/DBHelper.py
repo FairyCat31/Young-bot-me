@@ -34,11 +34,9 @@ class PendingDBManager(DBManager):
                    Column("did", map_types["int_big"])]
 
         for reg_field in reg_fields_list:
-            print(reg_field)
-            field_name = reg_field["custom_id"]
-            data_type = map_types.get(reg_field["data_type"])
-            if data_type is None:
-                data_type = map_types["str"]
+            field_name = reg_field["classic"]["custom_id"]
+            map_types.setdefault(reg_field["data_type"], map_types["str"])
+            data_type = map_types[reg_field["data_type"]]
 
             columns.append(Column(field_name, data_type))
 
