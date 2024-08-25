@@ -1,10 +1,34 @@
 {
   "dm_greetings": {
     "type": "BOOL",
-    "value": true
+    "value": null
   },
   "greeting_channel": {
     "type": "DC_OBJ",
-    "value": 0
+    "value": null
+  },
+  "member_role": {
+    "type": "ROLE",
+    "value": null
+  },
+  "player_role": {
+    "type": "ROLE",
+    "value": null
+  },
+  "moder_role": {
+    "type": "ROLE",
+    "value": null
+  },
+  "reg_result_channel": {
+    "type": "DC_OBJ",
+    "value": null
+  },
+  "dm_category": {
+    "type": "INT",
+    "value": null
+  },
+  "unimice_guild": {
+    "type": "INT",
+    "value": null
   }
 }
