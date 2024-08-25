@@ -1,16 +1,15 @@
-from sqlalchemy.ext.asyncio import create_async_engine
+import sqlite3
 from sqlalchemy.engine import create_engine
 from sqlalchemy.engine.base import Connection
 from app.scripts.components.jsonmanager import JsonManagerWithCrypt, AddressType
 from typing import Dict, LiteralString
 from sqlalchemy import (
-    MetaData,
-    Table,
-    Column
+    MetaData
 )
 
 
 CONNECT_SHAPE_URL_MARIADB = "mariadb+pymysql://{DB_USER}:{DB_PASS}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+CONNECT_SHAPE_URL_SQLITE3 = "app/data/local_dbs/{db_name}.db"
 
 
 def get_url_by_dict(data_for_conn: Dict[LiteralString, LiteralString]) -> str:
@@ -29,6 +28,7 @@ class DBType:
 
     """
     MariaDB = CONNECT_SHAPE_URL_MARIADB
+    SQLite3 = CONNECT_SHAPE_URL_SQLITE3
 
 
 class DBManager:
@@ -74,3 +74,16 @@ class DBManager:
     def drop_tables(self, conn: Connection):
         self.metadata_obj.drop_all(conn)
         conn.commit()
+
+
+class LiteDBManager:
+    def __init__(self, db_path: str):
+        self._db_path = db_path
+
+    @staticmethod
+    def db_connect(func):
+        def wrapper(self, *args, **kwargs):
+            with sqlite3.connect(self._db_path) as conn:
+                res = func(self, conn, *args, **kwargs)
+                return res
+        return wrapper

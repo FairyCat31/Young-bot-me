@@ -18,7 +18,7 @@ class ValueConvertorFromUser:
             "INT": int,
             "BOOL": self._convert_str_to_bool,
             "USER": self._convert_discord_obj_to_discord_id,
-            "ROLE": self._convert_discord_obj_to_discord_id,
+            "ROLE": self._convert_discord_role_to_discord_id,
             "DC_OBJ": self._convert_discord_obj_to_discord_id,
             "TEXT_CHANNEL": self._convert_discord_obj_to_discord_id
         }
@@ -38,6 +38,10 @@ class ValueConvertorFromUser:
     @staticmethod
     def _convert_discord_obj_to_discord_id(line: str) -> int:
         return int(line[2:-1])
+
+    @staticmethod
+    def _convert_discord_role_to_discord_id(line: str) -> int:
+        return int(line[3:-1])
 
     def return_convert_value(self):
         return self._convert_value
@@ -83,7 +87,7 @@ class DynamicConfigShape(commands.Cog):
         convert_value = ValueConvertorFromUser(data_type_need, value).return_convert_value()
         if convert_value is None:
             await inter.response.send_message(
-                f"Ошибка обновления параметра.\nНеудалось преобразовать {value} в {data_type_need}")
+                f"Ошибка обновления параметра.\nНе удалось преобразовать {value} в {data_type_need}")
             self.bot.log.printf("IncorrectTypeParameter: Failed to update parameter value", log_type=LogType.WARN)
             return
         # if all ok we get response what all ok
