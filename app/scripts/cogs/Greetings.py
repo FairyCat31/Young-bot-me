@@ -1,17 +1,9 @@
 from app.scripts.cogs.DynamicConfig import DynamicConfigHelper
-from app.scripts.components.smartdisnake import MEBot
+from app.scripts.components.smartdisnake import MEBot, SmartEmbed, ButtonView
 from app.scripts.components.logger import LogType
-from disnake import Member, CommandInteraction, Embed
-from disnake.ui import Button, View
+from disnake import Member
 from disnake.ext import commands
 from random import randint
-
-
-class GreetingView(View):
-    def __init__(self, buttons_group: dict, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        for button_parameters in buttons_group.values():
-            self.add_item(Button(**button_parameters))
 
 
 class Greeting(commands.Cog):
@@ -22,7 +14,7 @@ class Greeting(commands.Cog):
 
     @commands.Cog.listener()
     async def on_ready(self):
-        self.view = GreetingView(buttons_group=self.bot.props["buttons/greeting_button_group"])
+        self.view = ButtonView(self.bot.props["buttons/greeting_button_group"])
 
     @commands.Cog.listener(name="on_member_join")
     async def on_member_join(self, member: Member) -> None:
@@ -36,21 +28,20 @@ class Greeting(commands.Cog):
         # generate random first part of phrase
         greeting_phrases = self.bot.props["phrases/greetings"]
         greeting_random_phrase = greeting_phrases[randint(0, len(greeting_phrases)-1)]
-        greeting_random_phrase = greeting_random_phrase.format(user_mention=member.mention)
-        # split first dynamic phrase with second static phrase
-        greeting_end_phrase = self.bot.props["phrases/greeting_info"]
-        greeting_phrase = f"{greeting_random_phrase}\n\n{greeting_end_phrase}"
+        greeting_ch_phrase = greeting_random_phrase.format(user=member.mention)
+        dm_embed = SmartEmbed(self.bot.props["embeds/greetings_dm"])
+        dm_embed.description = dm_embed.description.format(user=member.mention)
         # open dm with user and send phrase to him if this func enabled
         if self.bot.props["dynamic_config/dm_greetings"]:
             await member.create_dm()
-            await member.dm_channel.send(greeting_phrase)
+            await member.dm_channel.send("", embed=dm_embed)
 
         # get chat id and check chat_id != 0
         chat_id = self.bot.props["dynamic_config/greeting_channel"]
         if chat_id:
             # get greeting channel
             greeting_channel = self.bot.get_channel(chat_id)
-            await greeting_channel.send(greeting_phrase)  # send phrase to chat
+            await greeting_channel.send(greeting_ch_phrase)  # send phrase to chat
 
 
 def setup(bot: MEBot):
