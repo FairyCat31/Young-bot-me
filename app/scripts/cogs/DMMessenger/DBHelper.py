@@ -14,6 +14,7 @@ ch_id INTEGER NOT NULL
     GET_USER = 'SELECT uid FROM user_dm WHERE ch_id = ?'
     GET_DM = 'SELECT ch_id FROM user_dm WHERE uid = ?'
     DEL_BY_UID = 'DELETE FROM user_dm WHERE uid = ?'
+    DEL_BY_CHID = 'DELETE FROM user_dm WHERE ch_id = ?'
 
 
 class DBManagerForDM(LiteDBManager):
@@ -55,4 +56,10 @@ class DBManagerForDM(LiteDBManager):
     def del_user_and_dm(self, conn: sqlite3.Connection, uid: int) -> None:
         cursor = conn.cursor()
         cursor.execute(SQLRequests.DEL_BY_UID, (uid,))
+        conn.commit()
+
+    @LiteDBManager.db_connect
+    def del_user_and_dm_by_chid(self, conn: sqlite3.Connection, ch_id: int) -> None:
+        cursor = conn.cursor()
+        cursor.execute(SQLRequests.DEL_BY_CHID, (ch_id, ))
         conn.commit()
