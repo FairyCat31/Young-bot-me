@@ -10,6 +10,7 @@ DYN_REQ = ("dm_category", "moder_role", "unimice_guild")
 MAX_PARSE_MESSAGES = 100
 TWO_WEEK_UTC = 1209600
 
+
 class DMMessenger(commands.Cog):
     def __init__(self, bot: MEBot):
         self.bot = bot
@@ -42,6 +43,11 @@ class DMMessenger(commands.Cog):
             self.dbm.add_user_and_dm(msg.author.id, ch_id)
             res = self.dbm.get_dm_id(msg.author.id)
 
+        if res < 0:
+            await msg.author.create_dm()
+            await msg.author.dm_channel.send(content=self.bot.props["phrases/bl_dm_msg"])
+            return
+
         guild = self.bot.get_guild(self.bot.props["dynamic_config/unimice_guild"])
         channel = guild.get_channel(res)
         files = []
@@ -51,6 +57,12 @@ class DMMessenger(commands.Cog):
 
     async def _send_category_msg_handler(self, msg: Message):
         uid = self.dbm.get_user_id(msg.channel.id)
+        if not uid:
+            nuid = self.dbm.get_user_id(-msg.channel.id)
+            if not nuid:
+                return
+            await msg.channel.send(content=self.bot.props["phrases/bl_cat_msg"])
+            return
         user = self.bot.get_user(uid)
         await user.create_dm()
         files = []
@@ -220,6 +232,39 @@ class DMMessenger(commands.Cog):
         ch_id = await self._create_dm_channel(user)
         self.dbm.add_user_and_dm(user.id, ch_id)
         await inter.response.send_message(self.bot.props["phrases/dm_open"].format(ch_id=ch_id))
+
+    @commands.slash_command(name="block_dm")
+    async def block_dm(self, inter: ApplicationCommandInteraction, discord_id: str):
+        if not discord_id.isdigit():
+            await inter.response.send_message(self.bot.props["phrases/inc_id"])
+            return
+        discord_id = int(discord_id)
+        ch_id = self.dbm.get_dm_id(discord_id)
+        if ch_id < 0:
+            await inter.response.send_message(self.bot.props["phrases/already_bl"])
+            return
+        user = self.bot.get_user(discord_id)
+        await inter.response.send_message(self.bot.props["phrases/bl_cat_msg"])
+        if user is not None:
+            await user.create_dm()
+            await user.dm_channel.send(content=self.bot.props["phrases/bl_dm_msg"])
+        ch = inter.guild.get_channel(ch_id)
+        if ch is not None:
+            await ch.send(content=self.bot.props["phrases/bl_cat_msg"])
+        self.dbm.block_or_unblock_user(uid=discord_id, block=True)
+
+    @commands.slash_command(name="unblock_dm")
+    async def unblock_dm(self, inter: ApplicationCommandInteraction, discord_id: str):
+        if not discord_id.isdigit():
+            await inter.response.send_message(self.bot.props["phrases/inc_id"])
+            return
+        discord_id = int(discord_id)
+        ch_id = self.dbm.get_dm_id(discord_id)
+        if ch_id > 0:
+            await inter.response.send_message(self.bot.props["phrases/already_unbl"])
+            return
+        await inter.response.send_message(self.bot.props["phrases/unbl_msg"])
+        self.dbm.block_or_unblock_user(uid=discord_id, unblock=True)
 
     @commands.slash_command(name="close_dm")
     async def close_dm(self, inter: ApplicationCommandInteraction, user: User):

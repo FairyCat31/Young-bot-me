@@ -15,6 +15,7 @@ ch_id INTEGER NOT NULL
     GET_DM = 'SELECT ch_id FROM user_dm WHERE uid = ?'
     DEL_BY_UID = 'DELETE FROM user_dm WHERE uid = ?'
     DEL_BY_CHID = 'DELETE FROM user_dm WHERE ch_id = ?'
+    BLOCK_USER = 'UPDATE user_dm SET ch_id = ? WHERE uid = ?'
 
 
 class DBManagerForDM(LiteDBManager):
@@ -32,7 +33,7 @@ class DBManagerForDM(LiteDBManager):
         cursor = conn.cursor()
         cursor.execute(SQLRequests.GET_USER, (ch_id,))
         output = cursor.fetchone()
-        result = 0 if len(output) == 0 else output[0]
+        result = 0 if output is None else output[0]
         return result
 
     @LiteDBManager.db_connect
@@ -62,4 +63,17 @@ class DBManagerForDM(LiteDBManager):
     def del_user_and_dm_by_chid(self, conn: sqlite3.Connection, ch_id: int) -> None:
         cursor = conn.cursor()
         cursor.execute(SQLRequests.DEL_BY_CHID, (ch_id, ))
+        conn.commit()
+
+    @LiteDBManager.db_connect
+    def block_or_unblock_user(self, conn: sqlite3.Connection, uid: int, block: bool = None, unblock: bool = None):
+        cursor = conn.cursor()
+        dm_id = self.get_dm_id(uid)
+        if block:
+            dm_id = dm_id * -1 if dm_id > 0 else dm_id
+        elif unblock:
+            dm_id = dm_id if dm_id > 0 else dm_id * -1
+        else:
+            dm_id *= -1
+        cursor.execute(SQLRequests.BLOCK_USER, (dm_id, uid))
         conn.commit()
