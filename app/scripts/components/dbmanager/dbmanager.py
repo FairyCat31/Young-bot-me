@@ -2,7 +2,6 @@ import sqlite3
 from sqlalchemy.engine import create_engine
 from sqlalchemy.engine.base import Connection
 from app.scripts.components.jsonmanager import JsonManagerWithCrypt, AddressType
-from typing import Dict, LiteralString
 from sqlalchemy import (
     MetaData
 )
@@ -12,7 +11,7 @@ CONNECT_SHAPE_URL_MARIADB = "mariadb+pymysql://{DB_USER}:{DB_PASS}@{DB_HOST}:{DB
 CONNECT_SHAPE_URL_SQLITE3 = "app/data/local_dbs/{db_name}.db"
 
 
-def get_url_by_dict(data_for_conn: Dict[LiteralString, LiteralString]) -> str:
+def get_url_by_dict(data_for_conn: dict) -> str:
     conn_address = data_for_conn["CONN_URL"].format(
         DB_USER=data_for_conn["DB_USER"],
         DB_PASS=data_for_conn["DB_PASS"],
