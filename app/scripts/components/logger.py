@@ -53,7 +53,7 @@ class Logger:
         # check if change the date
         if self.__old_date != new_date:
             # create new file
-            self.__path_to_log_file = f"{self.logger_conf["default_path"]}{self.module_prefix}_{new_date}.txt"
+            self.__path_to_log_file = f"{self.logger_conf['default_path']}{self.module_prefix}_{new_date}.txt"
             with open(self.__path_to_log_file, "w", encoding=self.logger_conf["encoding"]) as file:
                 file.write(f"Logger version {self.logger_conf['version']} | Log of module --> {self.module_prefix}\n")
             self.__old_date = new_date
