@@ -17,7 +17,7 @@
   },
   "moder_role": {
     "type": "ROLE",
-    "value": null
+    "value": 872884999047745556
   },
   "reg_result_channel": {
     "type": "DC_OBJ",
@@ -25,9 +25,13 @@
   },
   "dm_category": {
     "type": "INT",
-    "value": null
+    "value": 1277211778971078747
   },
   "unimice_guild": {
+    "type": "INT",
+    "value": 861205826352709642
+  },
+  "dm_moder_role": {
     "type": "INT",
     "value": null
   }
