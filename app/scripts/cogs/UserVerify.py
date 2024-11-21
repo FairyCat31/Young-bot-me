@@ -1,7 +1,7 @@
 from disnake.ext import commands
 from app.scripts.components.smartdisnake import MEBot
 from disnake import ApplicationCommandInteraction
-from disnake import Embed, Colour
+from disnake import Embed, Colour, Member
 
 
 UNIMICE_ROLE_ID = 1219532060608299079
@@ -22,7 +22,7 @@ class UserVerify(commands.Cog):
             if not name:
                 continue
             name = name.strip()
-            user = inter.guild.get_member(int(name)) if name.isdigit() else inter.guild.get_member_named(name)
+            user: Member = inter.guild.get_member(int(name)) if name.isdigit() else inter.guild.get_member_named(name)
             temp_embed = Embed(title=f"ЗАЯВКА {name}", colour=Colour.green())
             temp_embed.add_field(name="Статус заявки", value="Принята", inline=False)
             temp_embed.add_field(name="Информация", value="Выбери сервер в канале <#1267790201909153854>\nЗатем скачайте Java FX и Лаунчер в канале <#1219551109304156160>\nУдачи тебе, игрок)", inline=False)
@@ -33,7 +33,7 @@ class UserVerify(commands.Cog):
             await user.add_roles(player_role)
             ch = inter.guild.get_channel(CHANNEL_INFO_ID)
             await ch.send(content=f"{user.mention}", embed=temp_embed)
-            result += f"{name} ✅ Игрок был одобрен\n"
+            result += f"{user.name} ✅ Игрок был одобрен\n"
         await channel.send(result)
 
 
