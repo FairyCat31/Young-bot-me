@@ -16,6 +16,8 @@ class UserVerify(commands.Cog):
     @commands.default_member_permissions(administrator=True)
     async def verify(self, inter: ApplicationCommandInteraction, names: str):
         result = ""
+        await inter.response.send_message("Обрабатываем запрос")
+        channel = inter.channel
         for name in names.split(" "):
             user = inter.guild.get_member_named(name)
             temp_embed = Embed(title=f"ЗАЯВКА {name}", colour=Colour.green())
@@ -24,12 +26,12 @@ class UserVerify(commands.Cog):
             player_role = inter.guild.get_role(UNIMICE_ROLE_ID)
             if user is None:
                 result += f"{name} ❌ Игрок не найден\n"
-                return
+                continue
             await user.add_roles(player_role)
             ch = inter.guild.get_channel(CHANNEL_INFO_ID)
             await ch.send(content=f"{user.mention}", embed=temp_embed)
             result += f"{name} ✅ Игрок был одобрен\n"
-        await inter.response.send_message(result)
+        await channel.send(result)
 
 
 def setup(bot: MEBot):
