@@ -18,11 +18,11 @@ class UserVerify(commands.Cog):
         result = ""
         await inter.response.send_message("Обрабатываем запрос")
         channel = inter.channel
-        for name in names.split("\n"):
+        for name in names.split(" "):
             if not name:
                 continue
             name = name.strip()
-            user = inter.guild.get_member_named(name)
+            user = inter.guild.get_member(int(name)) if name.isdigit() else inter.guild.get_member_named(name)
             temp_embed = Embed(title=f"ЗАЯВКА {name}", colour=Colour.green())
             temp_embed.add_field(name="Статус заявки", value="Принята", inline=False)
             temp_embed.add_field(name="Информация", value="Выбери сервер в канале <#1267790201909153854>\nЗатем скачайте Java FX и Лаунчер в канале <#1219551109304156160>\nУдачи тебе, игрок)", inline=False)
