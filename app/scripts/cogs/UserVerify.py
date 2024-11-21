@@ -18,7 +18,10 @@ class UserVerify(commands.Cog):
         result = ""
         await inter.response.send_message("Обрабатываем запрос")
         channel = inter.channel
-        for name in names.split(" "):
+        for name in names.split("\n"):
+            if not name:
+                continue
+            name = name.strip()
             user = inter.guild.get_member_named(name)
             temp_embed = Embed(title=f"ЗАЯВКА {name}", colour=Colour.green())
             temp_embed.add_field(name="Статус заявки", value="Принята", inline=False)
