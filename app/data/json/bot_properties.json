@@ -1,7 +1,7 @@
 {
   "command_prefix": ".",
   "dynamic_config_file_name": "ym.json",
-  "cogs": ["cogs.Main", "cogs.DynamicConfig.DynamicConfig", "cogs.Greetings", "cogs.UserVerify", "cogs.DMMessenger.DMMessenger"],
+  "cogs": ["cogs.Main", "cogs.DynamicConfig.DynamicConfig", "cogs.Greetings", "cogs.UserVerify", "cogs.TicketM"],
   "dmm": {
     "dm_ch_name": "dm・{member_name}",
     "dm_ch_name_new": "dm ! {member_name}"
