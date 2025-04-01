@@ -1,27 +1,19 @@
 {
   "command_prefix": ".",
-  "dynamic_config_file_name": "ym.json",
-  "cogs": ["cogs.Main", "cogs.DynamicConfig.DynamicConfig", "cogs.Greetings", "cogs.UserVerify", "cogs.TicketM"],
-  "dmm": {
-    "dm_ch_name": "dm・{member_name}",
-    "dm_ch_name_new": "dm ! {member_name}"
+  "dynamic_config_file_name": "dyn_conf.json",
+  "cogs": ["cogs.Main", "cogs.DynamicConfig", "cogs.Greetings", "cogs.UserVerify", "cogs.TicketM", "cogs.WebAPI.WebYoung"],
+   "def_phrases": {
+    "start" : "Successful starting\nI logged as {user}\nStarting during: {during_time}",
+    "FormatErrorDynConfig" : "Ошибка обновления параметра.\\nНе удалось преобразовать {value} в {data_type_need}",
+    "ConsoleFormatErrorDynConfig": "IncorrectTypeParameter: Failed to update parameter value",
+    "ConsoleEditInfo": "Параметр {parameter} изменён ---> {convert_value}",
+    "RunErrorDynConfig": "Parameter \"%s\" not set. Func can't start correctly",
+    "PermErrorDynConfig": "У вас нету прав использовать эту команду",
+    "ping": "Успешно передано"
   },
   "phrases": {
-    "start" : "multiline\n> Successful starting\n> I logged as {user}\n> Starting during: {during_time}",
-    "reg_command_response": "Если хочешь получить роль игрока :clown:  и попасть на сервер :video_game:  - просто тыкни на кнопку снизу :point_down:   и заполни небольшую анкету! :scroll: ",
-    "reg_modal_response": "Ты успешно завершил заполнять {index}-ую часть анкеты из {max_index} частей\nПродолжай в том же духе",
-    "auto_moder_wr_old_ft": "Неверный формат возраста",
-    "auto_moder_wr_gender_ft": "Неверный формат пола",
-    "auto_moder_all_ver": "А ты уже авторизован!",
-    "ver_response": "Ты успешно заполнил заявку 🥳\nТеперь немного подожди, пока ее рассмотрят админы",
-    "auto_moder_def_reject": "Модератор не указал причину, попробуй заполнить анкету еще раз!",
-    "dm_start_message": "Привет, {user_mention}! \n{moder_mention} хочет задать тебе еще пару вопросов, это не займет много времени!",
-    "user_leave_server": "Пользователь вышел с дс сервера",
-    "close_panel": "Панель закрыта",
-    "open_panel": "Открытие панели...",
-    "open_panel_wait": "Подождите...",
-    "have_not_enough_rights": "{user_mention}, кажется у тебя нету прав меня использовать 😥 \nТы из администрации?\nТогда напиши <@642080060093890599>, он должен помочь тебе",
-    "parameter_not_set": "Параметр {par} не настроен",
+	"dm_ch_name": "dm・{member_name}",
+    "dm_ch_name_new": "dm ! {member_name}",
     "dm_open": "Открыт дм с участником\n<#{ch_id}>",
     "dm_close": "Дм закрыт",
     "inc_id": "Пользователь не может быть заблокан. Такого юзера нет.",
@@ -30,6 +22,9 @@
     "bl_cat_msg": "Не удалось доставить ваше сообщение: пользователь в бане\nДля разбана пропишите /unblock_dm",
     "bl_dm_msg": "Прости, но мне запретили с тобой общаться :(\nВсе вопросы ты можешь уточнить у администрации проекта...",
     "unbl_msg": "Пользователь разбанен",
+    "ch_ticket_name": "❗・тикет・{name}",
+    "only_ticket_cmd": "Эту команду можно использовать только в тикете",
+    "user_added": "{nick} был добавлен в тикет",
     "greetings": [
       "Чууу, {user}! \uD83D\uDC2D Добро пожаловать в Юнимайс! Готовься к веселью и приключениям с нами! \uD83D\uDE04",
       "Привет, {user}! \uD83D\uDC2D Рад(а) видеть тебя в нашей мышиной семье! Приготовься к захватывающим играм! \uD83C\uDF89",
@@ -47,204 +42,64 @@
         "style": 5,
         "url": "https://unimice.ru/#guide"
       }
-    ],
-
-    "reg_start": [
-      {
-        "label": "✅・Пройти анкету",
-        "row": 0,
-        "style": 3,
-        "custom_id": "reg_btn"
-      }
     ]
   },
   "embeds": {
-    "greetings": {
-
-    },
-    "empty_embed": {
-      "title": "НЕТ НОВЫХ ЗАЯВОК",
-      "description": "ВЫ МОЖЕТЕ ЗАКРЫТЬ ЭТО ОКНО",
-      "fields": []
-    },
     "greetings_dm": {
-      "args": {
-        "title": "Добро пожаловать на Юнимайс!",
-        "description": "Чууу, приветствую, {user}! \uD83D\uDC2D Добро пожаловать в нашу уютную норку — проект Юнимайс! Здесь мы не просто играем, а творим эпические (и не очень) истории вместе! \uD83D\uDE1C Готовься к веселью, приключениям и, конечно, кучу сыра... ой, точнее, радости! Если что-то непонятно или нужна помощь, не стесняйся обращаться ко мне, Младшей Мышке! Я всегда готова помочь... ну, или хотя бы посмеяться вместе с тобой! \uD83D\uDE04 Добро пожаловать в семью Юнимайс!",
-        "colour": 15437603
+      "description": "Чууу, приветствую, {user}! 🐭 Добро пожаловать в нашу уютную норку — проект Юнимайс! Здесь мы не просто играем, а творим эпические (и не очень) истории вместе! 😜 Готовься к веселью, приключениям и, конечно, кучу сыра... ой, точнее, радости! Если что-то непонятно или нужна помощь, не стесняйся обращаться ко мне, Младшей Мышке! Я всегда готова помочь... ну, или хотя бы посмеяться вместе с тобой! 😄 Добро пожаловать в семью Юнимайс!",
+      "fields": [],
+      "title": "Добро пожаловать на Юнимайс!",
+      "image": {
+        "url": "https://i.imgur.com/o2mJJX6.jpeg"
       },
-      "func_args": [
-        {
-          "func": "image",
-          "args": {
-            "url": "https://i.imgur.com/o2mJJX6.jpeg"
-          }
-        }
-      ],
-      "fields": []
+      "color": 15437603
     },
-    "game_modal_callback": {
-      "title": "Заявка {user_name}",
+    "accepted_forms": {
       "fields": [
         {
-          "name": "Стадия заявки",
-          "value": "Заявка проходит модерацию",
-          "inline": false
-        }
-      ]
-    },
-    "request_reject": {
-      "title": "Заявка {user_name}",
-      "description": "Ваша заявка отклонена",
-      "fields": [
-        {
-          "name": "Стадия заявки",
-          "value": "Отклонена",
-          "inline": false
-        }
-      ],
-      "other": {
-        "field" : {
-          "name": "Причина",
-          "value": "{reason}",
-          "inline": false
-        },
-        "footer_text": "Moderator logged as {moder_name}"
-      }
-    },
-    "request_accept": {
-      "title": "Заявка {user_name}",
-      "description": "",
-      "fields": [
-        {
-          "name": "статус заявки",
-          "value": "принята",
-          "inline": false
+          "name": "Статус заявок",
+          "value": "Одобрены"
         },
         {
-          "name": "информация",
-          "value": "Вы можете начинать играть\nлаунчер можете скачать в канале <#1219551109304156160>",
-          "inline": false
+          "name": "Информация",
+          "value": "Создайте игровую учетную запись в личном кабинете\nЗатем скачайте Java FX и Лаунчер в канале <#1219551109304156160>\nУдачи вам, игроки)"
         }
       ],
-      "other": {
-        "footer_text": "Moderator logged as {moder_name}"
-      }
+      "title": "Одобрение заявок",
+      "color": 3066993
+    },
+    "ticket_embed" : {
+      "description": "Выполните процедуры, которые могут помочь с решением вашей проблемы, и если они не помогут подробно опишите свою проблему в одном-двух сообщениях и прикрепите скриншоты. Ваше обращение будет рассмотрено в течение суток!",
+      "fields": [
+        {
+          "name": "Решение проблем с лаунчером",
+          "value": "Данные шаги позволят решить проблемы с лаунчером в 95% случаев:\n- Перезапустите пк\n- Отключите антивирус\n- Включите ВПН\nЕсли данные шаги не помогли - переустановите лаунчер и повторите процедуры\nЕсли даже после переустановки ошибка осталась - напишите в тикете \"Процедуры завершены, проблема осталась\" и подробно опишите вашу проблему, прикрепив скриншоты."
+        },
+        {
+          "name": "Решение проблем с сервером",
+          "value": "Проверьте каналы новостей, сервер может находиться на запланированном техническом обслуживании. Если сервер работает - выполните шаги, идентичные шагам в \"Ошибки лаунчера\" и опишите вашу проблему, описав скриншоты, если процедуры не помогли"
+        }
+      ],
+      "color": 3066993
+    },
+    "open_ticket": {
+      "description": "При нажатии мы создадим приватный канал для вашего обращения",
+      "fields": [],
+      "title": "Обращения",
+      "color": 15844367
     }
+
   },
-  "modals": {
-    "reason_reject": {
-      "title": "Причина отказа",
-      "custom_id": "reject",
-      "text_inputs": [
-        {
-          "label": "Укажите причину отказа",
-          "placeholder": "-",
-          "max_length" : 100,
-          "min_length": 0,
-          "required": true,
-          "custom_id": "reason",
-          "style": "short"
-        }
-      ]
-    },
-    "reg_modal": {
-      "title": "Верификация | Часть {part}",
-      "phrase_req_words": "Братик, напиши пожалуйста от {min_words} слов",
-      "questions": [
-      {
-        "classic" : {
-          "label": "Ваш логин на сайте",
-          "placeholder": "test",
-          "custom_id": "login"
-        },
-        "data_type": "str_20"
-      },
-      {
-        "classic": {
-          "label": "Ваша дата рождения",
-          "placeholder": "02 02 2023",
-          "custom_id": "date_birth"
-        },
-        "data_type": "date"
-      },
-      {
-        "classic": {
-          "label": "Ваш пол",
-          "placeholder": "м или ж",
-          "max_length": 1,
-          "custom_id": "gender"
-        },
-        "data_type": "gender"
-
-
-      },
-      {
-        "classic": {
-          "label": "Расскажите о себе",
-          "style": 2,
-          "custom_id": "about_me"
-        },
-        "custom": {
-          "min_words": 30
-        },
-         "data_type": "str"
-
-
-
-      },
-      {
-        "classic": {
-          "label": "Расскажите про ваши хобби",
-          "style": 2,
-          "custom_id": "hobbies"
-        },
-        "custom": {
-          "min_words": 30
-        },
-        "data_type": "str"
-      },
-      {
-        "classic": {
-          "label": "Играете ли во что-то помимо Майна?",
-          "style": 2,
-          "custom_id": "games"
-        },
-        "data_type": "str"
-      },
-      {
-        "classic": {
-          "label": "Что будете делать на сервере?",
-          "style": 2,
-          "custom_id": "activity"
-        },
-        "data_type": "str"
-      },
-      {
-        "classic": {
-          "label": "Играть будете один или с кем-то?",
-          "style": 2,
-          "custom_id": "teammates"
-        },
-        "data_type": "str"
-      },
-      {
-        "classic": {
-          "label": "Играли ли вы в МП с модом Create?",
-          "style": 2,
-          "custom_id": "practice"
-        },
-        "data_type": "str"
-      },
-      {
-        "classic": {
-          "label": "Какие читы вы когда-то использовали?",
-          "style": 2,
-          "custom_id": "cheats"
-        },
-        "data_type": "str"
-      }
-    ]
-    }
+  "modals": {},
+  "cmds": {
+    "main_cfg": {"name": "config", "description": "Команда для настройки бота"},
+    "set_cfg": {"name": "set", "description": "Изменить настройки бота"},
+    "del_cfg": {"name": "reset", "description": "Сбросить настройки/настройку бота"},
+    "show_cfg": {"name": "show", "description": "Показать настройки бота"},
+    "main_ping": {"name": "ping", "description":  "Проверка ответа от бота"},
+    "verify": {"name": "ver_users", "description": "Добавляет в список игроков"},
+    "snd_ticket": {"name": "send_ticket_opener", "description": "Отправляет сообщение для открытия тикета"},
+    "add_user": {"name": "add_user", "description": "Добавить участника в тикет"},
+    "close_ticket": {"name": "close_ticket", "description": "Закрыть тикет"}
   }
 }

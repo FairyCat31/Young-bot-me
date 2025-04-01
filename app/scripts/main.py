@@ -1,116 +1,189 @@
-import sys
-import os
-from json import loads
-import argparse
-sys.path.insert(1, os.path.join(sys.path[0].replace("/app/scripts", "")))
+from utils.ujson import AddressType, JsonManagerWithCrypt
+from factory.errors import FactoryStartArgumentError
+from sys import argv as sys_argv
+from json5 import loads
+from json import dumps
+from typing import Any
 import bot_manager
 
 
 __all__ = [
     "Main"
 ]
+"""
+0 - all ok
+1 - unknown arg format
+2 - func arg set earlier than func
+3 - args not set
+4 - unknown procedure
+"""
 
 
-# create children class with edit error message
-class ArgumentParser(argparse.ArgumentParser):
-    def __init__(self, *args, **kwargs):
-        self.description = kwargs["description"]
-        super().__init__(*args, **kwargs)
+class ArgParser:
+    def __init__(self):
+        self.func_count = -1
+        self.error_arg = ""
+        self.code = 0
 
-    def error(self, message):
+    # convert sub argument value to right data type
+    @staticmethod
+    def __convert_sub_arg(value: str) -> Any:
 
-        self.exit(2, '%s\n\n\nERROR: %s\n' % (self.description, message))
+        if value.isdigit():
+            return int(value)
+        elif value.replace('.', '', 1).isdigit():
+            return float(value)
+        elif value[0] == "[" or value[0] == "{":
+            print(value)
+            return loads(value)
+        elif value.lower() in ["true", "yes", "y"]:
+            return True
+        elif value.lower() in ["false", "no", "n"]:
+            return False
+        return value
 
-    def parse_args(self, *args, **kwargs):
-        dict_args = vars(super().parse_args(*args, **kwargs))
+    def parse_args(self, main_obj, procs_obj) -> int:
+        # start parsing
 
-        all_keys = tuple(dict_args.keys())
+        len_args = len(sys_argv)
+        # check if set args
+        if len_args == 1:
+            self.code = 3
 
-        for key in all_keys:
+        for i in range(1, len_args):
+            arg = sys_argv[i]
+            # check is correct format
+            if arg[0] != "-":
+                self.code = 1
+                self.error_arg = arg
+                break
 
-            if dict_args[key] is None:
-                del dict_args[key]
-                continue
+            if arg[1] == "-":
+                if self.func_count == -1:
+                    self.error_arg = arg
+                    self.code = 2
+                    break
+                pd_arg = arg.split("=")
+                main_obj.func_args[self.func_count][pd_arg[0][2:]] = self.__convert_sub_arg(pd_arg[1])
 
-            if type(dict_args[key]) is not str:
-                continue
+            else:
+                self.func_count += 1
+                main_obj.func_args.append({})
+                try:
+                    main_obj.start_func.append(getattr(procs_obj, arg[1:]))
+                except AttributeError:
+                    self.error_arg = arg
+                    self.code = 4
+                    break
 
-            first_symbol = dict_args[key][0]
-            if first_symbol == "{" or first_symbol == "[":
-                dict_args[key] = loads(dict_args[key])
-                continue
+        return self.code
 
-        return dict_args
 
+class StartProcedures:
+
+    @staticmethod
+    def h():
+        """-h - Print information about arg and usage"""
+        return StartProcedures.help()
+
+    @staticmethod
+    def help():
+        """-help - Print information about arg and usage"""
+        out = "Py Factory\nusage: main.py -option --parameter=value\nOptions:\n"
+        out += "\n".join([func.__doc__ for func in StartProcedures.__dict__.values() if type(func) == staticmethod])
+        print(out)
+
+    @staticmethod
+    def launch_bot(**kwargs):
+        """-launch_bot - Launch bot
+        --debug_mode | bool
+        --advanced_logging | bool"""
+        bm = bot_manager.BotManager(debug_mode=kwargs["debug_mode"], advanced_logging=kwargs["advanced_logging"])
+        bm.init_bot(**kwargs)
+        bm.run_bot()
+
+    @staticmethod
+    def add_db(db_data: dict):
+        """-add_db - Add connection data
+        --db_data | dict"""
+        jsm = JsonManagerWithCrypt(AddressType.CFILE, ".dbs.crptjson")
+        jsm.load_from_file()
+        for name, data in db_data.items():
+            jsm[name] = data
+        jsm.write_in_file()
+
+    @staticmethod
+    def show_db(name: str = ""):
+        """-show_db - Print data for the db connection
+        --name: | str (Optional)"""
+        jsm = JsonManagerWithCrypt(AddressType.CFILE, ".dbs.crptjson")
+        jsm.load_from_file()
+        if name:
+            print(dumps(jsm[name], indent=2))
+        else:
+            print(dumps(jsm.buffer, indent=2))
+
+    @staticmethod
+    def del_db(name: str = ""):
+        """-del_db - Del data for the db connection
+        --name: | str (Optional)"""
+        jsm = JsonManagerWithCrypt(AddressType.CFILE, ".dbs.crptjson")
+        jsm.load_from_file()
+        b = jsm.buffer
+        if name:
+            del b[name]
+        else:
+            b = {}
+        jsm.buffer = b
+        jsm.write_in_file()
+
+    @staticmethod
+    def add_serv(serv_data: dict):
+        """-add_serv - Print data for the rcon connection
+        --serv_data: | dict"""
+        jsm = JsonManagerWithCrypt(AddressType.CFILE, ".rcon_servers.crptjson")
+        jsm.load_from_file()
+        for name, data in serv_data.items():
+            jsm[name] = data
+        jsm.write_in_file()
+
+    @staticmethod
+    def show_serv(name: str = ""):
+        """-show_serv - Show data for the rcon connection
+        --name: | str (Optional)"""
+        jsm = JsonManagerWithCrypt(AddressType.CFILE, ".rcon_servers.crptjson")
+        jsm.load_from_file()
+        if name:
+            print(dumps(jsm[name], indent=2))
+        else:
+            print(dumps(jsm.buffer, indent=2))
+
+    @staticmethod
+    def del_serv(name: str = ""):
+        """-del_serv - Del data for the rcon connection
+        --name: | str (Optional)"""
+        jsm = JsonManagerWithCrypt(AddressType.CFILE, ".rcon_servers.crptjson")
+        jsm.load_from_file()
+        b = jsm.buffer
+        if name:
+            del b[name]
+        else:
+            b = {}
+        jsm.buffer = b
+        jsm.write_in_file()
 
 class Main:
     def __init__(self):
-        # list of all req keys for program
-        self.required_keys = [
-            ("name_bot", "YoungMouse")
-        ]
-        # list of all opt keys for program
-        self.optional_keys = [
-            ("activity", "{'name': 'unimice.ru', 'type': 'game'}")
-        ]
-        self.desc = self.__init_description()
-        # create parser
-        self.parser = self.__init_parser()
-        # get args
-        self.args = self.parser.parse_args()
+        self.start_func = []
+        self.func_args = []
 
-    def __init_description(self) -> str:
-        # Creating description, which print user, if user\'ll make mistake in setting keys
-        description = "\ndbmanager.py "
-        # generate str and plus with desc
-        # format: -name <name:str> -old <12:int>
-        description += " ".join(["-%s <%s:%s>" % (k, e, type(e)) for k, e in self.required_keys])
-
-        """
-        if optional_keys tuple is not empty
-
-        generate str and plus with desc
-        format:
-
-        optional arguments:
-            -sub <test:str>
-            -debug
-        """
-        description += "\n\noptional arguments:\n\t-h"
-        if self.optional_keys:
-
-            description += "\n\t" + "\n\t".join(
-                ["-%s <%s:%s>" % (k, e, type(e)) if e else "-%s" % k for k, e in self.optional_keys]
-            )
-
-        return description
-
-    def __init_parser(self) -> ArgumentParser:
-
-        # init parser with desc
-        parser = ArgumentParser(description=self.desc, add_help=False)
-        # init args from required_keys and optional_keys
-        for args in self.required_keys:
-            k, t = args
-            parser.add_argument(f"-{k}",
-                                type=type(t),
-                                required=True)
-        for args in self.optional_keys:
-            k, t = args
-            parser.add_argument(f"-{k}",
-                                type=type(t))
-
-        return parser
-
-    def main(self) -> int:
-        # convert object field to dict
-        print("\n\n\\|/ Bot constructor 0.3 alpha \\|/\n\n+ start of list args\n|\n|- " +
-              "\n|- ".join(f"{key}={value}" for key, value in self.args.items()) + "\n|\n+ end of list args\n")
-        # init bot manager and init bot with args
-        bman = bot_manager.BotManager()
-        bman.init_bot(**self.args)
-        bman.run_bot()
-        return 0
+    def main(self):
+        arg_parser = ArgParser()
+        arg_parser.parse_args(self, StartProcedures)
+        if arg_parser.code:
+            raise FactoryStartArgumentError(arg_parser.code, arg_parser.error_arg)
+        for i in range(len(self.func_args)):
+            self.start_func[i](**self.func_args[i])
 
 
 if __name__ == "__main__":

@@ -1,8 +1,11 @@
-python-dotenv==1.0.1
-aio-mc-rcon==3.2.2
 disnake==2.9.1
-SQLAlchemy==2.0.31
-aiomysql==0.2.0
+python-dotenv==1.0.1
+cryptography==43.0.1
 colorama==0.4.6
-requests==2.32.3
-cryptography
+SQLAlchemy==2.0.35
+PyMySQL==1.1.1
+aio-mc-rcon==3.2.2
+json5==0.9.25
+Quart==0.19.9
+Hypercorn==0.17.3
+pyjwt==2.10.1

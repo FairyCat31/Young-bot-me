@@ -1,41 +1,57 @@
+from typing import Dict
+
 from disnake.ext import commands
-from app.scripts.components.smartdisnake import MEBot
+from app.scripts.utils.smartdisnake import SmartBot, SmartEmbed
 from disnake import ApplicationCommandInteraction
-from disnake import Embed, Colour, Member
-
-
-UNIMICE_ROLE_ID = 1219532060608299079
-CHANNEL_INFO_ID = 1230932637657600111
+from disnake import Member
 
 
 class UserVerify(commands.Cog):
-    def __init__(self, bot: MEBot):
+    def __init__(self, bot: SmartBot):
         self.bot = bot
 
-    @commands.slash_command(name="ver_users", description="Добавляет в список игроков")
-    @commands.default_member_permissions(administrator=True)
-    async def verify(self, inter: ApplicationCommandInteraction, names: str):
-        result = ""
+    async def sl_verify(self, inter: ApplicationCommandInteraction, names: str):
         await inter.response.send_message("Обрабатываем запрос")
+        res = await self.verify(names)
+        output_msg = ""
+        for name, is_accepted in res.items():
+            if is_accepted:
+                output_msg += f"{name} ✅ Игрок был одобрен\n"
+            else:
+                output_msg += f"{name} ❌ Игрок не найден\n"
         channel = inter.channel
+        await channel.send(output_msg)
+
+    async def verify(self, names: str) -> Dict[str, bool]:
+        guild = self.bot.get_guild(self.bot.props["dynamic_config/unimice_guild"])
+        embed = SmartEmbed(self.bot.props["embeds/accepted_forms"], {})
+        player_role = guild.get_role(self.bot.props["dynamic_config/player_role"])
+        result = {}
+        pings = ""
         for name in names.split(" "):
             if not name:
                 continue
             name = name.strip()
-            user: Member = inter.guild.get_member(int(name)) if name.isdigit() else inter.guild.get_member_named(name)
+            user: Member = guild.get_member(int(name)) if name.isdigit() else guild.get_member_named(name)
             if user is None:
-                result += f"{name} ❌ Игрок не найден\n"
+                result[name] = False
                 continue
-            temp_embed = Embed(title=f"ЗАЯВКА {user.name}", colour=Colour.green())
-            temp_embed.add_field(name="Статус заявки", value="Принята", inline=False)
-            temp_embed.add_field(name="Информация", value="Выбери сервер в канале <#1267790201909153854>\nЗатем скачайте Java FX и Лаунчер в канале <#1219551109304156160>\nУдачи тебе, игрок)", inline=False)
-            player_role = inter.guild.get_role(UNIMICE_ROLE_ID)
+            pings += user.mention
             await user.add_roles(player_role)
-            ch = inter.guild.get_channel(CHANNEL_INFO_ID)
-            await ch.send(content=f"{user.mention}", embed=temp_embed)
-            result += f"{user.name} ✅ Игрок был одобрен\n"
-        await channel.send(result)
+            result[name] = True
+        if pings:
+            ch = guild.get_channel(self.bot.props["dynamic_config/channel_ver_info"])
+            await ch.send(content=pings, embed=embed)
+        return result
 
+def build(bot: SmartBot):
+    class BuildUserVerify(UserVerify):
+        @commands.slash_command(**bot.props["cmds/verify"])
+        @commands.default_member_permissions(administrator=True)
+        async def sl_verify(self, inter: ApplicationCommandInteraction, names: str):
+            return await super().sl_verify(inter, names)
+    return BuildUserVerify
 
-def setup(bot: MEBot):
-    bot.add_cog(UserVerify(bot))
+def setup(bot: SmartBot):
+    build_class = build(bot)
+    bot.add_cog(build_class(bot))

@@ -1,0 +1,8 @@
+{
+  ".env": "app/data/sys/.env",
+  "init_bm": "Successful initialization of Bot manager",
+  "init_bot": "Start to initialize a bot",
+  "init_successful_bot": "Successful initialization of bot",
+  "import_cog": "Import \"{cog}\" to bot",
+  "st_bot": "Starting bot..."
+}

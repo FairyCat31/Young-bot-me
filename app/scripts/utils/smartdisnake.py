@@ -1,10 +1,13 @@
+import asyncio
 from disnake.ui import Modal, TextInput, Button, View
 from typing import List, Dict
 from disnake.ext import commands
 from disnake import Embed, ButtonStyle
 from time import time
-from app.scripts.components.logger import Logger, LogType
-from app.scripts.components.jsonmanager import JsonManager, AddressType
+from app.scripts.utils.logger import Logger, LogType
+from app.scripts.utils.ujson import JsonManager, AddressType
+from typing import Coroutine
+
 
 BTN_STYLE_MAP = {
     1: ButtonStyle.primary,
@@ -15,23 +18,27 @@ BTN_STYLE_MAP = {
 }
 
 
-class MEBot(commands.Bot):
-
-    def __init__(self, name: str, *args, **kwargs):
+class SmartBot(commands.Bot):
+    def __init__(self, name: str, **kwargs):
         self.start_time = time()
-        super().__init__(*args, **kwargs)
+        super().__init__(intents=kwargs["intents"], command_prefix=kwargs["command_prefix"])
         self.name = name
+        self._async_tasks_for_queue = []
         self.props = JsonManager(AddressType.FILE, "bot_properties.json")
         self.props.load_from_file()
-        self.log = Logger(module_prefix=name)
+        self.log = Logger(name=name)
 
-    def __repr__(self):
-        return self.name
+    def add_async_task(self, target: Coroutine) -> None:
+        self._async_tasks_for_queue.append(target)
+
+    async def start_async_tasks(self):
+        await asyncio.gather(*self._async_tasks_for_queue)
 
     async def on_ready(self):
         end_time = time()
         delta_time = end_time - self.start_time
-        self.log.printf(self.props["phrases/start"].format(user=self.user, during_time=delta_time))
+        self.log.println(*self.props["def_phrases/start"].format(user=self.user, during_time=delta_time).split("\n"))
+        await asyncio.create_task(self.start_async_tasks())
 
     async def on_command_error(self, context: commands.Context, exception: commands.errors.CommandError) -> None:
         self.log.printf("Ignoring command -> %s" % context.message.content,
@@ -82,28 +89,38 @@ class SmartRegModal(Modal):
 
 
 class SmartEmbed(Embed):
-    def __init__(self, cfg: dict, **kwargs):
-        map_args = {
+    def __init__(self, cfg: dict, dyn_vars: Dict[str, str]):
+        self.dyn_vars = dyn_vars
+        embed_funcs = {
             "thumbnail": super().set_thumbnail,
             "author": super().set_author,
             "footer": super().set_footer,
-            "image": super().set_image,
-
+            "image": super().set_image
         }
-        args: Dict[str, str] = cfg["args"]
-        func_args: List[dict] = cfg["func_args"]
-        fields: List[Dict] = cfg["fields"]
-        super().__init__(
-            **args,
-            **kwargs
-        )
-        for field in fields:
-            super().add_field(**field)
 
-        for func_arg in func_args:
-            func = map_args[func_arg["func"]]
-            args = func_arg["args"]
-            func(**args)
+        init_args = {"color": cfg.get("color"), "url": cfg.get("url")}
+        for arg in ["title", "description"]:
+            value: str = cfg.get(arg)
+            if value is not None:
+                value = value.format(**dyn_vars)
+            init_args[arg] = value
+
+
+        super().__init__(**init_args)
+
+        if cfg.get("fields") is not None:
+            self.add_fields(cfg["fields"])
+
+        for key in embed_funcs:
+            if cfg.get(key) is None:
+                continue
+            embed_funcs[key](**cfg[key])
+
+    def add_fields(self, embeds: List[dict]):
+        for embed in embeds:
+            super().add_field(name=embed["name"].format(**self.dyn_vars),
+                              value=embed["value"].format(**self.dyn_vars),
+                              inline=embed.get("inline"))
 
 
 class ButtonView(View):

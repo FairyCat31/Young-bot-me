@@ -1,0 +1,38 @@
+{
+  "dm_greetings": {
+    "type": "BOOL",
+    "value": null
+  },
+  "greeting_channel": {
+    "type": "INT",
+    "value": null
+  },
+  "player_role": {
+    "type": "INT",
+    "value": 872898013759172678
+  },
+  "moder_role": {
+    "type": "INT",
+    "value": null
+  },
+  "worker_role": {
+    "type": "INT",
+    "value": 872884999047745556
+  },
+  "ticket_category": {
+    "type": "INT",
+    "value": 1277211778971078747
+  },
+  "channel_ver_info": {
+    "type": "INT",
+    "value": 1236403164329283584
+  },
+  "dm_category": {
+    "type": "INT",
+    "value": null
+  },
+  "unimice_guild": {
+    "type": "INT",
+    "value": 861205826352709642
+  }
+}

@@ -1,4 +1,4 @@
-from sqlalchemy import String, DateTime, Integer, Text, UnicodeText, BIGINT
+from sqlalchemy import Integer, UnicodeText, BIGINT
 
 
 map_types = {

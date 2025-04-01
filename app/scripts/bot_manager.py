@@ -1,61 +1,40 @@
-import datetime
-import disnake
+from utils.logger import Logger, PrintHandler, ErrorHandler
+from utils.ujson import JsonManager, AddressType
+from utils.smartdisnake import SmartBot
 from dotenv import dotenv_values
-from components.jsonmanager import JsonManager, AddressType
-from components.logger import Logger, LogType
-from components.smartdisnake import MEBot
-# from console_manager import Console
+from disnake import Intents
+import sys
 
 
 class BotManager:
-    def __init__(self):
+    def __init__(self, debug_mode: bool = True, advanced_logging: bool = True):
+        # init logger and redirect standard err and out streams to logger
+        self.log = Logger(name="Bot Manager", debug_mode=debug_mode)
+        self._debug_mode = debug_mode
+        if advanced_logging:
+            sys.stderr = ErrorHandler(self.log)
+            sys.stdout = PrintHandler(self.log)
         self.json_manager = JsonManager(AddressType.FILE, "bot_properties.json")
+        self.bot_man_props = JsonManager(AddressType.FILE, "factory.json")
         self.json_manager.load_from_file()
-        self.log = Logger(module_prefix="Bot Manager")
-        self.env_val = dotenv_values("app/data/sys/.env")
+        self.bot_man_props.load_from_file()
+        self.__env_val = dotenv_values(self.bot_man_props[".env"])
         self.bot = None
-        self.is_alive = True
-        self.log.printf("Successful initialization of Bot manager")
-        self.optional_prepare_func_map = {
-            "activity": self.__get_activity,
-            "created_at": self.__get_start_time
-        }
+        self.log.printf(self.bot_man_props["init_bm"])
 
-    @staticmethod
-    def __get_start_time() -> datetime.datetime:
-        return datetime.datetime.now()
-
-    @staticmethod
-    def __get_activity(args: dict) -> disnake.Activity:
-        activity_type = {
-            "game": disnake.ActivityType.playing,
-            "listening": disnake.ActivityType.listening,
-            "streaming": disnake.ActivityType.streaming
-        }
-        args["type"] = activity_type[args["type"]]
-        activity = disnake.Activity(**args)
-        return activity
-
-    def init_bot(self, name_bot, **kwargs):
-        for key in kwargs.keys():
-            convert_func = self.optional_prepare_func_map.get(key)
-            if convert_func is None:
-                continue
-
-            kwargs[key] = convert_func(kwargs[key])
+    def init_bot(self, **kwargs):
         command_prefix = self.json_manager["command_prefix"]
-        self.log.printf(f"Start to initialize a bot \"{name_bot}\"")
-        intents = disnake.Intents.all()
-        self.bot = MEBot(name=name_bot, intents=intents, command_prefix=command_prefix, **kwargs)
-
+        self.log.printf(self.bot_man_props["init_bot"])
+        intents = Intents.all()
+        self.bot = SmartBot(intents=intents, command_prefix=command_prefix, **kwargs)
+        self.bot.log.debug_mode = self._debug_mode
         for cog in self.json_manager["cogs"]:
-            self.log.printf(f"Import \"{cog}\" to bot \"{name_bot}\"")
+            self.log.printf(self.bot_man_props["import_cog"].format(cog=cog))
             self.bot.load_extension(cog)
 
-        self.log.printf(f"Successful initialization of bot \"{name_bot}\"")
+        self.log.printf(self.bot_man_props["init_successful_bot"])
 
     def run_bot(self):
-        name_bot = self.bot.name
-        token = self.env_val[f"{name_bot}_TOKEN"]
-        self.log.printf(f"Starting bot \"{name_bot}\"")
+        token = self.__env_val["BOT_TOKEN"]
+        self.log.printf(self.bot_man_props["st_bot"])
         self.bot.run(token)
