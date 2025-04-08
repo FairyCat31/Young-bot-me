@@ -116,7 +116,7 @@ class Message:
 
 
     async def load_from_request(self, session_request: Request, required_params: list):
-        self.content = await session_request.get_json(silent=True)
+        self.content = await session_request.get_json(silent=True, force=True)
         self.required_params = required_params
         if self.content is not None:
             self.umid = self.content.get("umid")

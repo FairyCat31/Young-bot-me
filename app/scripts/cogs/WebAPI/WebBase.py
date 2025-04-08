@@ -27,7 +27,6 @@ class WebBase(commands.Cog):
                 if check_auth[0]["error"]:
                     return check_auth
 
-
                 return await func(session, *args, **kwargs)
             return wrapper
         return decorator

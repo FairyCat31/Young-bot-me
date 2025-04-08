@@ -25,8 +25,14 @@ class WebYoung(WebBase):
 
             result = await self.user_verify.verify(names)
             msg = Message(session, {"error": "", "output": result})
-            print(type(msg.content))
             return jsonify(await msg.pack()), 201
+
+        @self.web_app.after_request
+        def add_cors_headers(response):
+            response.headers['Access-Control-Allow-Origin'] = '*'
+            response.headers['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS'
+            response.headers['Access-Control-Allow-Headers'] = 'Authorization, Content-Type'
+            return response
 
     @commands.Cog.listener()
     async def on_ready(self):
