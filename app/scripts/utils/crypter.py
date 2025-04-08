@@ -17,9 +17,11 @@ def gen_random_line(len_id: int = 8) -> str:
     result = "".join([SYM_IDS[randint(0, SYM_LEN)] for i in range(len_id)])
     return result
 
-
 def gen_salt(size: int = 32) -> bytes:  # generate random bytes
     return urandom(size)
+
+def gen_hex_salt(size: int =32) -> str:
+    return gen_salt(size).hex()
 
 
 class CrypterConvertor:
@@ -145,12 +147,12 @@ class AsymmetricCrypter(CrypterConvertor):
 
 
 class Hasher:
-    def __init__(self, hash_name: str, salt: bytes | int = None):
+    def __init__(self, hash_name: str, salt: str | bytes | int = None):
         self.hash_name = hash_name
 
         # setting salt
         t_salt = type(salt)
-        if t_salt is bytes:
+        if t_salt is bytes or t_salt is str:
             self.salt = salt
         else:
             self.salt = gen_salt(salt if t_salt is int else 32)
