@@ -9,7 +9,7 @@
   },
   "player_role": {
     "type": "INT",
-    "value": 872898013759172678
+    "value": null
   },
   "moder_role": {
     "type": "INT",
@@ -17,15 +17,15 @@
   },
   "worker_role": {
     "type": "INT",
-    "value": 872884999047745556
+    "value": null
   },
   "ticket_category": {
     "type": "INT",
-    "value": 1277211778971078747
+    "value": null
   },
   "channel_ver_info": {
     "type": "INT",
-    "value": 1236403164329283584
+    "value": null
   },
   "dm_category": {
     "type": "INT",
@@ -33,6 +33,6 @@
   },
   "unimice_guild": {
     "type": "INT",
-    "value": 861205826352709642
+    "value": null
   }
 }
