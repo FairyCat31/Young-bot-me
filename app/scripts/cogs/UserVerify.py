@@ -1,5 +1,5 @@
 from typing import Dict
-
+from app.scripts.cogs.DynamicConfig import DynamicConfigCog as DynConf
 from disnake.ext import commands
 from app.scripts.utils.smartdisnake import SmartBot, SmartEmbed
 from disnake import ApplicationCommandInteraction
@@ -22,10 +22,17 @@ class UserVerify(commands.Cog):
         channel = inter.channel
         await channel.send(output_msg)
 
-    async def verify(self, names: str) -> Dict[str, bool]:
+    async def verify(self, names: str) -> Dict[str, bool] | None:
         guild = self.bot.get_guild(self.bot.props["dynamic_config/unimice_guild"])
-        embed = SmartEmbed(self.bot.props["embeds/accepted_forms"], {})
+        if guild is None:
+            return
         player_role = guild.get_role(self.bot.props["dynamic_config/player_role"])
+        if player_role is None:
+            return
+        ch = guild.get_channel(self.bot.props["dynamic_config/channel_ver_info"])
+        if ch is None:
+            return
+        embed = SmartEmbed(self.bot.props["embeds/accepted_forms"], {})
         result = {}
         pings = ""
         for name in names.split(" "):
@@ -40,7 +47,6 @@ class UserVerify(commands.Cog):
             await user.add_roles(player_role)
             result[name] = True
         if pings:
-            ch = guild.get_channel(self.bot.props["dynamic_config/channel_ver_info"])
             await ch.send(content=pings, embed=embed)
         return result
 
@@ -48,6 +54,7 @@ def build(bot: SmartBot):
     class BuildUserVerify(UserVerify):
         @commands.slash_command(**bot.props["cmds/verify"])
         @commands.default_member_permissions(administrator=True)
+        @DynConf.is_cfg_setup("player_role", "unimice_guild")
         async def sl_verify(self, inter: ApplicationCommandInteraction, names: str):
             return await super().sl_verify(inter, names)
     return BuildUserVerify
