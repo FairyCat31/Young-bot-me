@@ -14,7 +14,7 @@ SYM_LEN = len(SYM_IDS) - 1
 
 
 def gen_random_line(len_id: int = 8) -> str:
-    result = "".join([SYM_IDS[randint(0, SYM_LEN)] for i in range(len_id)])
+    result = "".join([SYM_IDS[randint(0, SYM_LEN)] for _ in range(len_id)])
     return result
 
 def gen_salt(size: int = 32) -> bytes:  # generate random bytes
@@ -147,15 +147,21 @@ class AsymmetricCrypter(CrypterConvertor):
 
 
 class Hasher:
-    def __init__(self, hash_name: str, salt: str | bytes | int = None):
+    def __init__(self, hash_name: str, salt: str |  bytes | int = None, encoding="utf-8"):
         self.hash_name = hash_name
-
+        self.encoding = encoding
         # setting salt
         t_salt = type(salt)
-        if t_salt is bytes or t_salt is str:
+        if t_salt is bytes:
             self.salt = salt
+        elif t_salt is str:
+            self.salt = salt.encode(self.encoding)
         else:
             self.salt = gen_salt(salt if t_salt is int else 32)
 
     def data_hash(self, data: bytes, iters: int = 100):
         return hashlib.pbkdf2_hmac(self.hash_name, data, self.salt, iters)
+
+    def data_hex_hash(self, data: str, iters: int = 100, encoding: str | None =None):
+        enc = self.encoding if encoding is None else encoding
+        return self.data_hash(data.encode(enc), iters).hex()

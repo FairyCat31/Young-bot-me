@@ -3,7 +3,7 @@ from typing import Callable
 from json import dumps
 from datetime import datetime
 from quart import Request
-from app.scripts.utils.crypter import Hasher, gen_salt, gen_random_line
+from app.scripts.utils.crypter import Hasher, gen_hex_salt, gen_random_line
 from jwt import decode as jwt_decode, encode as jwt_encode, InvalidSignatureError, InvalidIssuerError
 
 
@@ -19,21 +19,21 @@ class AuthToken:
                  reset_cookie: str, encoding: str = "latin1"):
         self.tid: str = tid
         self.max_sessions = max_sessions
-        self._hashed_token: bytes = hashed_token.encode(encoding=encoding)
-        self._reset_cookie: bytes = reset_cookie.encode(encoding=encoding)
-        self._hasher: Hasher = Hasher("sha256", salt=token_salt.encode(encoding=encoding))
+        self._hashed_token: str = hashed_token
+        self._reset_cookie: str = reset_cookie
+        self._hasher: Hasher = Hasher("sha256", salt=token_salt)
 
-    def is_auth_token_valid(self, user_auth_token: str, encoding: str= "latin1") -> bool:
-        hashed_user_auth_token = self._hasher.data_hash(user_auth_token.encode(encoding=encoding))
+    def is_auth_token_valid(self, user_auth_token: str) -> bool:
+        hashed_user_auth_token = self._hasher.data_hex_hash(user_auth_token)
         return hashed_user_auth_token == self._hashed_token
 
-    def is_reset_cookie_valid(self, user_reset_cookie: str, encoding: str= "latin1") -> bool:
-        hashed_user_reset_cookie = self._hasher.data_hash(user_reset_cookie.encode(encoding=encoding))
+    def is_reset_cookie_valid(self, user_reset_cookie: str) -> bool:
+        hashed_user_reset_cookie = self._hasher.data_hex_hash(user_reset_cookie)
         return hashed_user_reset_cookie == self._hashed_token
 
 
 class JWToken:
-    def __init__(self, sid: str, type_token: str, salt: bytes):
+    def __init__(self, sid: str, type_token: str, salt: str):
         payloads = {
             "iss": sid,
             "exp":TOKEN_LIFE[type_token] + datetime.now().timestamp(),
@@ -52,7 +52,6 @@ class JWToken:
             if self.raw == test_token:
                 return {"error": ""}, 200
             return {"error": "Incorrect token. Use another token for auth."}, 403
-
         except InvalidSignatureError:
             return {"error": "Signature check failed. Token was edited by someone."}, 403
         except InvalidIssuerError:
@@ -65,7 +64,7 @@ class WebSession:
         self.tid: str = tid
         self.on_delete = on_delete
         self.sid: str = gen_random_line(24)
-        self._session_salt = gen_salt(64)
+        self._session_salt = gen_hex_salt(64)
         self.session_hasher = Hasher("sha256", salt=self._session_salt)
         self._access_token = JWToken(sid=self.sid, type_token="access_token", salt=self._session_salt)
         self._refresh_token = JWToken(sid=self.sid, type_token="refresh_token", salt=self._session_salt)
@@ -93,7 +92,7 @@ class WebSession:
     def get_auth_data(self) -> dict:
         output = {
             "sid": self.sid,
-            "salt": self._session_salt.decode("latin1"),
+            "salt": self._session_salt,
             "access_token": self._access_token.raw,
             "refresh_token": self._refresh_token.raw
         }
@@ -110,7 +109,7 @@ class Message:
         print(self.content)
         self.content["exp"] = int(datetime.now().timestamp() + exp_after)
         print(self.content)
-        sign = self.session.session_hasher.data_hash(dumps(self.content).encode("latin1")).decode("latin1")
+        sign = self.session.session_hasher.data_hex_hash(dumps(self.content))
         self.content["signature"] = sign
         return self.content.copy()
 
@@ -145,9 +144,8 @@ class Message:
         hasher = self.session.session_hasher
         temp_cont = self.content.copy()
         del temp_cont["signature"]
-        temp_sign = hasher.data_hash(dumps(temp_cont).encode("latin1"))
-        print(temp_sign.decode("latin1"), sign)
-        if temp_sign.decode("latin1") == sign:
+        temp_sign = hasher.data_hex_hash(dumps(temp_cont))
+        if temp_sign == sign:
 
             return {"error": ""}, 200
         else:
