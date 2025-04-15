@@ -7,6 +7,7 @@ from app.scripts.utils.smartdisnake import SmartBot
 from app.scripts.utils.ujson import JsonManager, AddressType
 from app.scripts.cogs.WebAPI.Models import AuthToken, WebSession, Message
 
+
 class WebBase(commands.Cog):
     def __init__(self, bot: SmartBot, name: str = "API"):
         self.bot = bot

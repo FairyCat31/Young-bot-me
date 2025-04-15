@@ -24,6 +24,8 @@ class WebYoung(WebBase):
                 return jsonify({"error": "Module UserVerify is not available"}), 500
 
             result = await self.user_verify.verify(names)
+            if not result:
+                return jsonify({"error": "Dynamic vars is not setup for module UserVerify. Contact with admin for solving this problem"}), 500
             msg = Message(session, {"error": "", "output": result})
             return jsonify(await msg.pack()), 201
 
