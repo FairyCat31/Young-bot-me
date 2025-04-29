@@ -1,4 +1,8 @@
 {
+  "__pyfactory_package__": {
+    "name": "logger_conf",
+    "version": "1"
+  },
   "encoding": "utf-8",
   "default_path": "app/data/logs/",
   "time_format": "%H:%M:%S",

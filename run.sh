@@ -1,8 +1,7 @@
 #!/bin/bash
 
-source env/bin/activate
+poetry env activate
 export PYTHONPATH=$(pwd)
-echo $(pwd)
-python3 app/scripts/main.py -launch_bot --name=Test --debug_mode=True --advanced_logging=True
+poetry run python app/scripts/main.py -launch_bot --name=Test
 
 read -p "Press any key..."

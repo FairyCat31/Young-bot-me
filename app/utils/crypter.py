@@ -1,17 +1,23 @@
+import hashlib
+
+from string import ascii_letters, digits
+from random import randint
+from json import loads, dumps
+from os import urandom
+
 from cryptography.hazmat.primitives.asymmetric import rsa, padding
 from cryptography.hazmat.primitives import serialization, hashes
 from cryptography.hazmat.backends import default_backend
 from cryptography.fernet import Fernet
-from json import loads, dumps
-from os import urandom
-import hashlib
-from random import randint
-from string import ascii_letters, digits
 
 
 SYM_IDS = ascii_letters + digits
 SYM_LEN = len(SYM_IDS) - 1
 
+__pyfactory_package__ = {
+    "name": "crypter",
+    "version": "1"
+}
 
 def gen_random_line(len_id: int = 8) -> str:
     result = "".join([SYM_IDS[randint(0, SYM_LEN)] for _ in range(len_id)])
@@ -20,7 +26,7 @@ def gen_random_line(len_id: int = 8) -> str:
 def gen_salt(size: int = 32) -> bytes:  # generate random bytes
     return urandom(size)
 
-def gen_hex_salt(size: int =32) -> str:
+def gen_hex_salt(size: int = 32) -> str:
     return gen_salt(size).hex()
 
 
@@ -67,13 +73,13 @@ class CrypterConvertor:
 
 
 class Crypter(CrypterConvertor):
-    """
-    Class for easy decrypt and encrypt STR using symmetric algorithm
-    """
     def __init__(self, crypt_key: bytes, encoding: str = "latin1"):
         """
-        crypt_key - symmetric key, which using for decrypt and encrypt data
-        encoding - encoding for the convertation data from bytes to string DEFAULT: latin1
+        Class for easy decrypt and encrypt STR using symmetric algorithm
+
+        Args:
+            crypt_key: symmetric key, which using for decrypt and encrypt data
+            encoding: encoding for the convertation data from bytes to string DEFAULT: latin1
         """
         super().__init__(encoding)
         self.__fernet = Fernet(crypt_key)
@@ -94,16 +100,16 @@ class Crypter(CrypterConvertor):
 
 
 class AsymmetricCrypter(CrypterConvertor):
-    """
-    Class for easy decrypt and encrypt STR using asymmetric algorithm
-    """
     def __init__(self, private_key: rsa.RSAPrivateKey | None = None,
                  public_key: rsa.RSAPublicKey | None = None,
                  encoding: str = "latin1"):
         """
-        private_key - asymmetric key, which using for decrypt data
-        public_key - asymmetric key, which using for encrypt data
-        encoding - encoding for the convertation data from bytes to string DEFAULT: latin1
+        Class for easy decrypt and encrypt STR using asymmetric algorithm
+
+        Args:
+        private_key: asymmetric key, which using for decrypt data
+        public_key: asymmetric key, which using for encrypt data
+        encoding: encoding for the convertation data from bytes to string DEFAULT: latin1
         """
         super().__init__(encoding)
         self.__private_key = private_key
@@ -148,8 +154,17 @@ class AsymmetricCrypter(CrypterConvertor):
 
 class Hasher:
     def __init__(self, hash_name: str, salt: str |  bytes | int = None, encoding="utf-8"):
+        """
+        Class for hashing bytes
+
+        Args:
+            hash_name: name of hash function
+            salt: random line
+            encoding: salt and data encoding
+        """
         self.hash_name = hash_name
         self.encoding = encoding
+
         # setting salt
         t_salt = type(salt)
         if t_salt is bytes:
@@ -160,8 +175,11 @@ class Hasher:
             self.salt = gen_salt(salt if t_salt is int else 32)
 
     def data_hash(self, data: bytes, iters: int = 100):
+        """
+        Hashing
+        """
         return hashlib.pbkdf2_hmac(self.hash_name, data, self.salt, iters)
 
-    def data_hex_hash(self, data: str, iters: int = 100, encoding: str | None =None):
+    def data_hex_hash(self, data: str, iters: int = 100, encoding: str | None = None):
         enc = self.encoding if encoding is None else encoding
         return self.data_hash(data.encode(enc), iters).hex()

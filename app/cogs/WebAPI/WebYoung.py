@@ -1,9 +1,20 @@
 from disnake.ext import commands
 from quart import jsonify
 
-from app.scripts.cogs.UserVerify import UserVerify
-from app.scripts.cogs.WebAPI.WebBase import WebBase, WebSession, Message
-from app.scripts.utils.smartdisnake import SmartBot
+from app.cogs.UserVerify import UserVerify
+from app.cogs.WebAPI.WebBase import WebBase, WebSession, Message
+from app.utils.smartdisnake import SmartBot
+
+
+__pyfactory_package__ = {
+    "name": "web_young",
+    "version": "1",
+    "dependencies": {
+        "smartdisnake": "1",
+        "web_base": "1",
+        "user_verify": "1"
+    }
+}
 
 class WebYoung(WebBase):
     def __init__(self, *args, **kwargs):

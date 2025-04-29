@@ -1,4 +1,8 @@
 {
+  "__pyfactory_package__": {
+    "name": "dyn_conf",
+    "version": "1"
+  },
   "dm_greetings": {
     "type": "BOOL",
     "value": null

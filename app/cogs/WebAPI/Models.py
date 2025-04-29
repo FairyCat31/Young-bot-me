@@ -1,10 +1,25 @@
 import asyncio
+from datetime import datetime
 from typing import Callable
 from json import dumps
-from datetime import datetime
+
 from quart import Request
-from app.scripts.utils.crypter import Hasher, gen_hex_salt, gen_random_line
-from jwt import decode as jwt_decode, encode as jwt_encode, InvalidSignatureError, InvalidIssuerError
+from jwt import (decode as jwt_decode,
+                 encode as jwt_encode,
+                 InvalidSignatureError,
+                 InvalidIssuerError)
+
+from app.utils.crypter import Hasher, gen_hex_salt, gen_random_line
+
+
+__pyfactory_package__ = {
+    "name": "web_models",
+    "version": "1.0",
+    "dependencies": {
+        "smartdisnake": "1"
+    }
+}
+
 
 
 TOKEN_LIFE = {

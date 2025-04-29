@@ -1,5 +1,14 @@
 from disnake.ext import commands
-from app.scripts.utils.smartdisnake import SmartBot
+from app.utils.smartdisnake import SmartBot
+
+
+__pyfactory_package__ = {
+    "name": "main_cog",
+    "version": "1.0",
+    "dependencies": {
+        "smartdisnake": "1"
+    }
+}
 
 
 class Main(commands.Cog):

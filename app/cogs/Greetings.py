@@ -1,9 +1,21 @@
-from app.scripts.utils.smartdisnake import SmartEmbed, SmartBot
-from app.scripts.cogs.DynamicConfig import DynamicConfigCog as DynConf
-from disnake import Member
-from disnake.ext import commands
 from random import randint
 
+from disnake import Member
+from disnake.ext import commands
+
+from app.utils.smartdisnake import SmartEmbed, SmartBot
+from app.cogs.DynamicConfig import DynamicConfigCog as DynConf
+
+
+
+__pyfactory_package__ = {
+    "name": "greetings",
+    "version": "1",
+    "dependencies": {
+        "smartdisnake": "1",
+        "dynamic_config": "1"
+    }
+}
 
 class Greeting(commands.Cog):
     def __init__(self, bot: SmartBot):

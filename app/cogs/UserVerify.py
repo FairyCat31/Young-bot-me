@@ -1,10 +1,22 @@
 from typing import Dict
-from app.scripts.cogs.DynamicConfig import DynamicConfigCog as DynConf
-from disnake.ext import commands
-from app.scripts.utils.smartdisnake import SmartBot, SmartEmbed
+
 from disnake import ApplicationCommandInteraction
 from disnake import Member
+from disnake.ext import commands
 
+from app.cogs.DynamicConfig import DynamicConfigCog as DynConf
+from app.utils.smartdisnake import SmartBot, SmartEmbed
+
+
+
+__pyfactory_package__ = {
+    "name": "user_verify",
+    "version": "1",
+    "dependencies": {
+        "smartdisnake": "1",
+        "dynamic_config": "1"
+    }
+}
 
 class UserVerify(commands.Cog):
     def __init__(self, bot: SmartBot):

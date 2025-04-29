@@ -1,4 +1,8 @@
 {
+  "__pyfactory_package__": {
+    "name": "factory_json",
+    "version": "1"
+  },
   ".env": "app/data/sys/.env",
   "init_bm": "Successful initialization of Bot manager",
   "init_bot": "Start to initialize a bot",

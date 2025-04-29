@@ -2,10 +2,10 @@ import sqlite3
 from sys import path as sys_path
 from sqlalchemy.engine import create_engine
 from sqlalchemy.orm import sessionmaker
-from app.scripts.utils.ujson import JsonManagerWithCrypt, AddressType
+from app.utils.ujson import JsonManagerWithCrypt, AddressType
 from urllib.parse import quote_plus
 from sqlalchemy import MetaData, NullPool
-from app.scripts.factory.errors import DatabaseConnectionDataError, DatabaseNameError
+from app.factory.errors import DatabaseConnectionDataError, DatabaseNameError
 
 
 launch_path = sys_path[1]

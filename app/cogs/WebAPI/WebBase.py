@@ -1,11 +1,23 @@
 from typing import Dict, List
+
 from disnake.ext import commands
 from hypercorn.asyncio import serve
 from hypercorn.config import Config
 from quart import Quart, request, jsonify
-from app.scripts.utils.smartdisnake import SmartBot
-from app.scripts.utils.ujson import JsonManager, AddressType
-from app.scripts.cogs.WebAPI.Models import AuthToken, WebSession, Message
+
+from app.utils.smartdisnake import SmartBot
+from app.utils.ujson import JsonManager
+from app.cogs.WebAPI.Models import AuthToken, WebSession, Message
+
+
+__pyfactory_package__ = {
+    "name": "web_base",
+    "version": "1.0",
+    "dependencies": {
+        "smartdisnake": "1",
+        "web_models": "1"
+    }
+}
 
 
 class WebBase(commands.Cog):
@@ -51,7 +63,7 @@ class WebBase(commands.Cog):
             self.sessions_map[tid].remove(sid)
 
     def load_tokens(self):
-        jm = JsonManager(AddressType.FILE, "tokens.json")
+        jm = JsonManager("tokens.json")
         jm.load_from_file()
         for token in jm.buffer:
             self.sessions_map.setdefault(token["tid"], [])
@@ -105,6 +117,12 @@ class WebBase(commands.Cog):
             print(self.sessions_map)
             return jsonify({"error": "", "output": "Session was deleted successful"}), 201
 
+        @self.web_app.route("/",
+                            methods=["GET"], endpoint="goooooool")
+        async def close_session():
+            print("GOOOOOOOOOOOOL")
+            return jsonify({"error": "", "output": "Session was deleted successful"}), 201
+
 
     @staticmethod
     def init_config_quart() -> Config:
@@ -114,14 +132,14 @@ class WebBase(commands.Cog):
         config.bind = ['localhost:8080']
         return config
 
-    def add_quart_to_async_task(self):
+    def quart_to_async_task(self):
         self.bot.add_async_task(serve(self.web_app, WebBase.init_config_quart()))
 
     @commands.Cog.listener(name="on_ready")
     async def on_ready(self):
         self.bot.log.printf(f"Serving Quart app '{self.web_app.name}'")
 
-        self.add_quart_to_async_task()
+        self.quart_to_async_task()
 
 
 def setup(bot: SmartBot):

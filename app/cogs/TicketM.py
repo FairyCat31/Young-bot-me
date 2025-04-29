@@ -1,9 +1,25 @@
 from disnake.ext import commands
-from app.scripts.utils.smartdisnake import SmartBot, SmartEmbed
-from disnake import ApplicationCommandInteraction, CategoryChannel, PermissionOverwrite, Guild, MessageInteraction
-from disnake import Member, ButtonStyle
 from disnake.ui import Button
-from app.scripts.cogs.DynamicConfig import DynamicConfigShape as DynConf
+from disnake import (ApplicationCommandInteraction,
+                     PermissionOverwrite,
+                     MessageInteraction,
+                     CategoryChannel,
+                     ButtonStyle,
+                     Guild,
+                     Member)
+
+from app.utils.smartdisnake import SmartBot, SmartEmbed
+from app.cogs.DynamicConfig import DynamicConfigCog as DynConf
+
+
+__pyfactory_package__ = {
+    "name": "ticket_m",
+    "version": "1",
+    "dependencies": {
+        "smartdisnake": "1",
+        "dynamic_config": "1"
+    }
+}
 
 
 CLOSE_TICKET_BTN = Button(custom_id="t_close", label="Закрыть тикет", style=ButtonStyle.red, emoji="✖")

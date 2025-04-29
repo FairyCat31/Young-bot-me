@@ -1,4 +1,8 @@
 {
+  "__pyfactory_package__": {
+    "name": "bot_properties",
+    "version": "1.1"
+  },
   "command_prefix": ".",
   "dynamic_config_file_name": "dyn_conf.json",
   "cogs": ["cogs.Main", "cogs.DynamicConfig", "cogs.Greetings", "cogs.UserVerify", "cogs.TicketM", "cogs.WebAPI.WebYoung"],
@@ -6,7 +10,7 @@
     "start" : "Successful starting\nI logged as {user}\nStarting during: {during_time}",
     "FormatErrorDynConfig" : "Ошибка обновления параметра.\\nНе удалось преобразовать {value} в {data_type_need}",
     "ConsoleFormatErrorDynConfig": "IncorrectTypeParameter: Failed to update parameter value",
-    "ConsoleEditInfo": "Параметр {parameter} изменён ---> {convert_value}",
+    "ConsoleEditInfo": "({author}) Параметр {parameter} изменён ---> {convert_value}",
     "RunErrorDynConfig": "Parameter \"%s\" not set. Func can't start correctly",
     "PermErrorDynConfig": "У вас нету прав использовать эту команду",
     "ping": "Успешно передано"
