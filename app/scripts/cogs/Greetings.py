@@ -1,5 +1,5 @@
-from app.scripts.utils.smartdisnake import SmartEmbed, ButtonView, SmartBot
-from app.scripts.cogs.DynamicConfig import DynamicConfigShape as DynConf
+from app.scripts.utils.smartdisnake import SmartEmbed, SmartBot
+from app.scripts.cogs.DynamicConfig import DynamicConfigCog as DynConf
 from disnake import Member
 from disnake.ext import commands
 from random import randint
@@ -10,10 +10,6 @@ class Greeting(commands.Cog):
         self.bot = bot
         self.msg_id = None
         self.view = None
-
-    @commands.Cog.listener()
-    async def on_ready(self):
-        self.view = ButtonView(self.bot.props["buttons/greeting_button_group"])
 
     @commands.Cog.listener(name="on_member_join")
     @DynConf.is_cfg_setup("dm_greetings", "greeting_channel")
