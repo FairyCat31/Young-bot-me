@@ -88,16 +88,19 @@ class TicketM(commands.Cog):
 def build(bot: SmartBot):
     class BuildTicketM(TicketM):
         @commands.slash_command(**bot.props["cmds/snd_ticket"])
+        @commands.guild_only()
         @commands.default_member_permissions(administrator=True)
         async def send_ticket_opener(self, inter: ApplicationCommandInteraction):
             await super().send_ticket_opener(inter)
 
         @commands.slash_command(**bot.props["cmds/add_user"])
+        @commands.guild_only()
         @DynConf.has_any_roles("worker_role")
         async def add_user(self, inter: ApplicationCommandInteraction, member: Member):
             await super().add_user(inter, member)
 
         @commands.slash_command(**bot.props["cmds/close_ticket"])
+        @commands.guild_only()
         @DynConf.has_any_roles("worker_role")
         async def close_ticket(self, inter: ApplicationCommandInteraction):
             await super().close_ticket(inter)

@@ -65,6 +65,7 @@ class UserVerify(commands.Cog):
 def build(bot: SmartBot):
     class BuildUserVerify(UserVerify):
         @commands.slash_command(**bot.props["cmds/verify"])
+        @commands.guild_only()
         @commands.default_member_permissions(administrator=True)
         @DynConf.is_cfg_setup("player_role", "unimice_guild")
         async def sl_verify(self, inter: ApplicationCommandInteraction, names: str):

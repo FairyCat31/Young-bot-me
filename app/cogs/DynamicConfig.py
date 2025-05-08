@@ -236,6 +236,7 @@ def build(bot: SmartBot):
         # bind decorators from properties
 
         @commands.slash_command(**bot.props["cmds/main_cfg"])
+        @commands.guild_only()
         @commands.default_member_permissions(administrator=True)
         async def config(self, inter):
             pass
