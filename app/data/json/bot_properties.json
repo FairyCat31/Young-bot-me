@@ -1,7 +1,7 @@
 {
   "command_prefix": ".",
   "dynamic_config_file_name": "dyn_conf.json",
-  "cogs": ["cogs.Main", "cogs.DynamicConfig", "cogs.Greetings", "cogs.UserVerify", "cogs.TicketM", "cogs.WebAPI.WebYoung"],
+  "cogs": ["cogs.Main", "cogs.DynamicConfig", "cogs.Greetings", "cogs.UserVerify", "cogs.TicketM"],
    "def_phrases": {
     "start" : "Successful starting\nI logged as {user}\nStarting during: {during_time}",
     "FormatErrorDynConfig" : "Ошибка обновления параметра.\\nНе удалось преобразовать {value} в {data_type_need}",
@@ -9,7 +9,8 @@
     "ConsoleEditInfo": "Параметр {parameter} изменён ---> {convert_value}",
     "RunErrorDynConfig": "Parameter \"%s\" not set. Func can't start correctly",
     "PermErrorDynConfig": "У вас нету прав использовать эту команду",
-    "ping": "Успешно передано"
+    "ping": "Успешно передано",
+     "help": ":cheese::video_game::sparkles: Добро пожаловать в Unimice! :sparkles::video_game::mouse:\n\n:one: :pencil: Регистрация\n→ Создайте профиль на официальном сайте\n\n:two: :clipboard: Анкета\n→ Заполните форму и ожидайте одобрения :white_check_mark:\n\n:three: :arrow_down: Лаунчер\n→ Скачайте наш лаунчер в Discord-канале #\uD83C\uDF58・лаунчер \n\n:four: :key: Подтверждение\n→ В личном кабинете установите ник и пароль для входа\n\n:five: :door: Вход\n→ Запустите лаунчер и авторизуйтесь\n\n:six: :tada: Успех!\n→ Выберите любимый сервер:\n:black_small_square: Mouse Earth :earth_africa:\n:black_small_square: Mouse Moon :crescent_moon:\n:black_small_square: ...и другие!\n\n:small_blue_diamond: Нужна помощь? Обращайтесь в #❓・помощь  !"
   },
   "phrases": {
 	"dm_ch_name": "dm・{member_name}",
@@ -100,6 +101,7 @@
     "verify": {"name": "ver_users", "description": "Добавляет в список игроков"},
     "snd_ticket": {"name": "send_ticket_opener", "description": "Отправляет сообщение для открытия тикета"},
     "add_user": {"name": "add_user", "description": "Добавить участника в тикет"},
-    "close_ticket": {"name": "close_ticket", "description": "Закрыть тикет"}
+    "close_ticket": {"name": "close_ticket", "description": "Закрыть тикет"},
+    "main_help": {"name": "help", "description": "Помощь потерявшимся на сервере"}
   }
 }
