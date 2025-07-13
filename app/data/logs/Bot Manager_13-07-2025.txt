@@ -1,0 +1,9 @@
+Logger version 0.2a | Log of module --> Bot Manager
+[10:06:37] [Bot Manager] [INFO ] Successful initialization of Bot manager
+[10:06:37] [Bot Manager] [INFO ] Start to initialize a bot "YoungMouse"
+[10:06:37] [Bot Manager] [INFO ] Import "app.scripts.cogs.Main" to bot "YoungMouse"
+[10:06:37] [Bot Manager] [INFO ] Import "app.scripts.cogs.DynamicConfig.DynamicConfig" to bot "YoungMouse"
+[10:06:37] [Bot Manager] [INFO ] Import "app.scripts.cogs.UserVerify" to bot "YoungMouse"
+[10:06:37] [Bot Manager] [INFO ] Import "app.scripts.cogs.TicketM" to bot "YoungMouse"
+[10:06:37] [Bot Manager] [INFO ] Successful initialization of bot "YoungMouse"
+[10:06:37] [Bot Manager] [INFO ] Starting bot "YoungMouse"

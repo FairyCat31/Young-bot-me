@@ -17,7 +17,7 @@ class Main(commands.Cog):
     async def help(self, inter):
         author = inter.author
         print(author.name, author.nick, author.global_name)
-        await inter.response.send_message("https://unimice.ru/#guide")
+        await inter.response.send_message(self.bot.props["phrases/help"])
 
 
 def setup(bot: commands.Bot):

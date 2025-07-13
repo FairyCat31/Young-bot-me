@@ -1,0 +1,5 @@
+Logger version 0.2a | Log of module --> YoungMouse
+[10:06:41] [YoungMouse] [INFO ] multiline
+> Successful starting
+> I logged as Young-bot-me#3707
+> Starting during: 4.282389879226685
