@@ -77,6 +77,8 @@ class DynamicConfigCog(commands.Cog):
         file_name = bot.props["dynamic_config_file_name"]
         self.dynamic_json = JsonManager(file_name)
         self.dynamic_json.load_from_file()
+        self._reload_dynamic_config()
+
 
     @staticmethod
     def is_cfg_setup(*params: str, echo: bool = True, discord_response: bool = False):
